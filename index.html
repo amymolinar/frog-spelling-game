@@ -98,7 +98,7 @@ footer{text-align:center;font-size:12px;padding:15px}
       <div class="pixelTitle">FROG'S<br>SPELLING<br>ADVENTURE!</div>
       <div class="frog">🐸</div>
       <div class="subtitle">Hop, stomp, spell, and save the day!</div>
-      <button class="big" id="playBtn">▶ PLAY</button>
+      <label for="studentClass" style="margin-top:12px;font-weight:bold">Your class</label><select id="studentClass" style="font-size:21px;padding:9px;border:3px solid #17334d;border-radius:12px;width:240px"></select><label for="studentName" style="margin-top:12px;font-weight:bold">Your first name</label><input id="studentName" list="classNames" autocomplete="off" maxlength="40" style="font-size:24px;padding:10px;border:3px solid #17334d;border-radius:12px;width:240px;text-align:center"><datalist id="classNames"></datalist><div id="nameMessage" role="status" class="note"></div><button class="big" id="playBtn">▶ PLAY</button>
       <button id="resetProgress" class="small">RESET PLAYER PROGRESS</button>
     </div>
   </section>
@@ -137,7 +137,7 @@ footer{text-align:center;font-size:12px;padding:15px}
 
   <section id="victory" class="hero hidden">
     <div class="cloud c1"></div><div class="cloud c2"></div><div class="hill h1"></div><div class="hill h2"></div><div class="grass"></div><div class="ground"></div>
-    <div class="heroContent"><h1 id="victoryTitle" class="pixelTitle">WORLD CLEAR!</h1><div class="frog" id="danceFrog">🐸💃</div><h2 id="victoryText">You did it!</h2><p id="victorySub" class="subtitle">Great spelling!</p><div id="completionCode" class="hidden" role="status"></div><button class="big" id="nextBtn">NEXT WORLD ▶</button><button id="mapAfterWin">WORLD MAP</button></div>
+    <div class="heroContent"><h1 id="victoryTitle" class="pixelTitle">WORLD CLEAR!</h1><div class="frog" id="danceFrog">🐸💃</div><h2 id="victoryText">You did it!</h2><p id="victorySub" class="subtitle">Great spelling!</p><div id="reportStatus" role="status" class="note"></div><button id="retryReport" class="small hidden">RETRY SENDING REPORT</button><div id="completionCode" class="hidden" role="status"></div><button class="big" id="nextBtn">NEXT WORLD ▶</button><button id="mapAfterWin">WORLD MAP</button></div>
   </section>
 
 
@@ -155,11 +155,14 @@ const WORLD_NAMES = ["Sunny Meadow","Butterfly Garden","Mushroom Meadow","Sunset
 const BOSS_NAMES = ["Triangle Boss","Square Boss","Circle Boss","Rectangle Boss"];
 const BOSS_EMOJI = ["🔺","🟦","⭕","▭"];
 let frogX=12,jumping=false,jumpTimeout=null,frogY=0,frogVY=0,monster=null,spawnAt=0,monsterNumber=0,stompCount=0;
+let selectedClassId='main';
+let playerSession=null,activityId='preview',sharedReady=false,classRoster=[];
+function playerStorageKey(key){return key+':'+(playerSession?playerSession.classId+':'+playerSession.name.toLowerCase()+':'+playerSession.activityId+':'+playerSession.sessionId:'preview');}
 let secretCodes=["fish","hat","dog","bug"];
 try{const saved=JSON.parse(localStorage.getItem("frogSecretCodes")||"null");if(Array.isArray(saved)&&saved.length===4)secretCodes=saved;}catch(e){}
 const CODE_RANGES=["0 challenging words","1–3 challenging words","4–7 challenging words","8–10 challenging words"];
-function getDifficultySession(){try{const r=JSON.parse(localStorage.getItem("frogDifficultySession")||"null");if(r&&r.wordKey===JSON.stringify(words)&&Array.isArray(r.missed))return r;}catch(e){}return {wordKey:JSON.stringify(words),missed:[],finished:false};}
-function saveDifficultySession(r){localStorage.setItem("frogDifficultySession",JSON.stringify(r));}
+function getDifficultySession(){try{const r=JSON.parse(localStorage.getItem(playerStorageKey("frogDifficultySession"))||"null");if(r&&r.wordKey===JSON.stringify(words)&&Array.isArray(r.missed))return r;}catch(e){}return {wordKey:JSON.stringify(words),missed:[],finished:false};}
+function saveDifficultySession(r){localStorage.setItem(playerStorageKey("frogDifficultySession"),JSON.stringify(r));}
 function markChallengingWord(index){const r=getDifficultySession();if(!r.missed.includes(index))r.missed.push(index);saveDifficultySession(r);}
 function renderLetterBlanks(){const length=Array.from(worldWords(currentWorld)[currentWordIndex]||"").length,value=Array.from($("spellingInput").value);$("letterBlanks").innerHTML="";for(let i=0;i<Math.max(length,value.length);i++){const span=document.createElement("span");span.className="letterSlot"+(i>=length?" extra":"");span.textContent=value[i]||"";$("letterBlanks").appendChild(span);}$("spellingInput").setAttribute("aria-label","Spell the word. "+length+" letters.");}
 const TOUGH_MONSTERS=["grasshopper","bumblebee","snail","cricket"];
@@ -175,8 +178,8 @@ let words = [...DEFAULT_WORDS], currentWorld = 1, currentWordIndex = 0, hits = 0
 const $ = id => document.getElementById(id);
 const screens = ["home","worldSelect","travel","bossScreen","victory"];
 function showScreen(id){ screenVersion++;battleTimers.forEach(clearTimeout);battleTimers=[];battleBusy=false;clearMovementKeys();clearInterval(travelInterval);if(id!=="travel"){seedShot=null;$("seedShot").classList.add("hidden");monster=null;$("monster").classList.add("hidden");}$("tongue").classList.remove("lash");$("battleFrog").classList.remove("dance"); screens.forEach(s=>$(s).classList.toggle("hidden",s!==id)); }
-function getProgress(){try{return JSON.parse(localStorage.getItem("frogSpellProgress")||'{"completed":[]}')}catch(e){return {completed:[]}}}
-function saveProgress(p){localStorage.setItem("frogSpellProgress",JSON.stringify(p))}
+function getProgress(){try{return JSON.parse(localStorage.getItem(playerStorageKey("frogSpellProgress"))||'{"completed":[]}')}catch(e){return {completed:[]}}}
+function saveProgress(p){localStorage.setItem(playerStorageKey("frogSpellProgress"),JSON.stringify(p))}
 function worldWords(w){return w<=2?words.slice(0,5):words.slice(5,10)}
 function completed(w){return getProgress().completed.includes(w)}
 function unlocked(w){return w===1||completed(w-1)}
@@ -190,15 +193,40 @@ function renderWorlds(){
 }
 async function cloudRequest(action,data={}){
  if(!CLOUD_URL) throw new Error("Cloud URL is not configured yet.");
- const params=new URLSearchParams({action,...Object.fromEntries(Object.entries(data).map(([k,v])=>[k,typeof v==="string"?v:JSON.stringify(v)]))});
+ const params=new URLSearchParams({action,classId:selectedClassId,...Object.fromEntries(Object.entries(data).map(([k,v])=>[k,typeof v==="string"?v:JSON.stringify(v)]))});
  const response=await fetch(CLOUD_URL+(CLOUD_URL.includes("?")?"&":"?")+params.toString(),{method:"GET",cache:"no-store"});
  if(!response.ok)throw new Error("Cloud request failed ("+response.status+").");
  const result=await response.json();if(!result.ok)throw new Error(result.error||"Cloud service error.");return result;
 }
 async function loadSharedWords(){
- if(!CLOUD_URL)return;
- try{const r=await cloudRequest('getWords');if(Array.isArray(r.words)&&r.words.length===10)words=r.words;if(Array.isArray(r.codes)&&r.codes.length===4)secretCodes=r.codes;}
- catch(e){console.warn('Shared word list could not load:',e.message);}
+ $('playBtn').disabled=true;$('nameMessage').textContent='Loading your class…';
+ try{
+  const r=await cloudRequest('getWords');if(!Array.isArray(r.roster))throw Error('Your teacher needs to update the shared game script.');
+  words=r.words;secretCodes=r.codes;activityId=r.activityId;classRoster=r.roster;$('classNames').innerHTML='';
+  classRoster.forEach(name=>{const option=document.createElement('option');option.value=name;$('classNames').appendChild(option);});
+  sharedReady=true;$('nameMessage').textContent=classRoster.length?'Type your name, then press PLAY.':'Your teacher needs to add the class names first.';
+  if(localStorage.getItem('frogPendingReport'))sendCompletionReport();
+ }catch(e){$('nameMessage').textContent='Could not load the class: '+e.message;}finally{$('playBtn').disabled=!sharedReady;}
+}
+async function beginStudentGame(){
+ if(!sharedReady)return;
+ const name=$('studentName').value.trim();if(!name){$('nameMessage').textContent='Please type your first name.';return;}
+ $('playBtn').disabled=true;
+ try{
+  const pending=JSON.parse(localStorage.getItem('frogPendingReport')||'null');
+  if(pending){if(pending.classId===selectedClassId&&pending.activityId!==activityId)localStorage.removeItem('frogPendingReport');else{await sendCompletionReport();if(localStorage.getItem('frogPendingReport'))throw Error('Your last completion report has not sent yet. Check the connection and try again.');}}
+  const cached=JSON.parse(localStorage.getItem('frogActivePlayer')||'null');
+  const resume=cached&&cached.classId===selectedClassId&&cached.name.toLowerCase()===name.toLowerCase()&&cached.activityId===activityId?cached.sessionId:'';
+  const r=await cloudRequest('beginGame',{name,sessionId:resume});playerSession={classId:selectedClassId,name:r.name,sessionId:r.sessionId,activityId:r.activityId};localStorage.setItem('frogActivePlayer',JSON.stringify(playerSession));
+  startMusic();renderWorlds();showScreen('worldSelect');
+ }catch(e){$('nameMessage').textContent=e.message;}finally{$('playBtn').disabled=false;}
+}
+async function sendCompletionReport(){
+ const pending=JSON.parse(localStorage.getItem('frogPendingReport')||'null');if(!pending)return;
+ $('reportStatus').textContent='Sending your completion to your teacher…';$('retryReport').disabled=true;
+ try{await cloudRequest('completeGame',pending);if(localStorage.getItem('frogPendingReport')===JSON.stringify(pending))localStorage.removeItem('frogPendingReport');$('reportStatus').textContent='Your teacher received your completion!';$('retryReport').classList.add('hidden');}
+ catch(e){$('reportStatus').textContent='Your game is complete. The report could not send: '+e.message;$('retryReport').classList.remove('hidden');}
+ finally{$('retryReport').disabled=false;}
 }
 function speakWord(word){
  $("spokenWord").textContent="🔊 Listen!";
@@ -405,7 +433,8 @@ function winWorld(){
    const session=getDifficultySession(),n=session.missed.length,index=n===0?0:n<=3?1:n<=7?2:3;
    $('completionCode').textContent='Your secret completion word:';const code=document.createElement('strong');code.textContent=secretCodes[index];$('completionCode').appendChild(code);
    const instruction=document.createElement('div');instruction.textContent='Write your name and secret word on your completion slip.';$('completionCode').appendChild(instruction);$('completionCode').classList.remove('hidden');
-   session.finished=true;saveDifficultySession(session);saveProgress({completed:[]});
+   session.finished=true;saveDifficultySession(session);
+   if(playerSession){localStorage.setItem('frogPendingReport',JSON.stringify({...playerSession,misses:n,missedIndices:JSON.stringify(session.missed)}));sendCompletionReport();}saveProgress({completed:[]});
   }
   $('victoryTitle').textContent=currentWorld===4?'YOU SAVED SPELLING LAND!':'WORLD '+currentWorld+' CLEAR!';
   $('victoryText').textContent='Perfect spelling! The boss is defeated!';
@@ -440,9 +469,9 @@ function startMusic(){
  },180);
 }
 $("musicToggle").onclick=()=>{musicEnabled=!musicEnabled;$("musicToggle").textContent=musicEnabled?"♫ MUSIC ON":"♫ MUSIC OFF";$("musicToggle").setAttribute("aria-pressed",String(musicEnabled));if(musicEnabled)startMusic();};
-$("playBtn").onclick=()=>{startMusic();renderWorlds();showScreen("worldSelect")};
+$('playBtn').onclick=beginStudentGame;$('studentName').addEventListener('keydown',e=>{if(e.key==='Enter')beginStudentGame();});$('retryReport').onclick=sendCompletionReport;
 $("homeBtn").onclick=()=>showScreen("home");
-$("resetProgress").onclick=()=>{if(confirm("Reset completed worlds on this computer?")){saveProgress({completed:[]});localStorage.removeItem("frogDifficultySession");alert("Progress reset.");}};
+$("resetProgress").onclick=()=>{if(confirm("Reset completed worlds on this computer?")){saveProgress({completed:[]});localStorage.removeItem(playerStorageKey("frogDifficultySession"));alert("Progress reset.");}};
 function clearMovementKeys(){movementKeys.clear();}
 function editingText(target){return target instanceof Element && !!target.closest('input, textarea, select, [contenteditable="true"]');}
 window.addEventListener("keydown",e=>{
@@ -470,10 +499,16 @@ $("jumpBtn").onclick=jump;$("quitTravel").onclick=()=>{clearInterval(travelInter
 $("spellingInput").addEventListener("input",renderLetterBlanks);$("letterBlanks").onclick=()=>$("spellingInput").focus();
 $("submitWord").onclick=submitSpelling;$("spellingInput").addEventListener("keydown",e=>{if(e.key==="Enter")submitSpelling()});$("hearAgain").onclick=()=>speakWord(worldWords(currentWorld)[currentWordIndex]);
 $("leaveBoss").onclick=()=>{speechSynthesis?.cancel?.();renderWorlds();showScreen("worldSelect")};
-$("nextBtn").onclick=()=>{if(replayRequired){startTravel(currentWorld);return;}if(currentWorld===4){saveProgress({completed:[]});renderWorlds();showScreen("worldSelect")}else{renderWorlds();startTravel(currentWorld+1)}};
-$("mapAfterWin").onclick=()=>{renderWorlds();showScreen("worldSelect")};
+$("nextBtn").onclick=()=>{if(replayRequired){startTravel(currentWorld);return;}if(currentWorld===4){saveProgress({completed:[]});playerSession=null;showScreen("home")}else{renderWorlds();startTravel(currentWorld+1)}};
+$("mapAfterWin").onclick=()=>{if(currentWorld===4&&!replayRequired){playerSession=null;showScreen("home");}else{renderWorlds();showScreen("worldSelect")}};
 if("speechSynthesis"in window){speechSynthesis.onvoiceschanged=()=>{}}
-loadSharedWords();
+async function loadClasses(){
+ $('playBtn').disabled=true;
+ try{const r=await cloudRequest('getClasses');$('studentClass').innerHTML='';r.classes.forEach(c=>{const option=document.createElement('option');option.value=c.id;option.textContent=c.name;$('studentClass').appendChild(option);});selectedClassId=r.classes[0].id;await loadSharedWords();}
+ catch(e){$('nameMessage').textContent='Could not load classes. Your teacher may need to update the shared script.';}
+}
+$('studentClass').onchange=()=>{selectedClassId=$('studentClass').value;playerSession=null;$('studentName').value='';sharedReady=false;loadSharedWords();};
+loadClasses();
 </script>
 </body>
 </html>

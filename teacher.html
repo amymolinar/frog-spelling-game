@@ -1,14 +1,18 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frog Teacher Dashboard</title><style>
 *{box-sizing:border-box}body{margin:0;background:#e7f7ef;color:#17334d;font-family:"Trebuchet MS",Arial,sans-serif}.wrap{max-width:760px;margin:30px auto;padding:20px}.panel{background:#fff9df;border:3px solid #17334d;border-radius:18px;padding:24px;margin-bottom:20px}h1{font-size:30px}input,button{font:inherit;border:2px solid #17334d;border-radius:10px;padding:11px}input{width:100%;margin-top:6px}button{background:#ffe45c;font-weight:bold;cursor:pointer;margin:10px 8px 0 0}button:disabled{opacity:.5;cursor:wait}.teacherGrid{display:grid;grid-template-columns:1fr 1fr;gap:15px}label{font-weight:bold}.note{font-size:14px;line-height:1.5}.hidden{display:none!important}.feedback{min-height:25px;margin-top:14px}@media(max-width:500px){.teacherGrid{grid-template-columns:1fr}}
-</style></head><body><main class="wrap"><h1>🐸 Frog Teacher Dashboard</h1><p>Change the classroom spelling list and secret completion words.</p><section class="panel" id="loginArea"><h2>Teacher sign in</h2><label for="teacherPassword">Teacher password</label><input id="teacherPassword" type="password" autocomplete="current-password"><button id="teacherLogin">UNLOCK</button><div id="loginMessage" class="feedback" role="status"></div></section><section class="panel hidden" id="teacherEditor"><h2>Spelling words</h2><p class="note">Worlds 1–2 use words 1–5. Worlds 3–4 use words 6–10.</p><div class="teacherGrid" id="wordInputs"></div><h2>Secret completion words</h2><p class="note">Each distinct spelling word missed counts once across the entire game, including retries.</p><div class="teacherGrid" id="codeInputs"></div><button id="saveWords">SAVE WORDS AND CODES</button><button id="changePasswordBtn">CHANGE PASSWORD</button><button id="teacherClose">SIGN OUT</button><div id="teacherMessage" class="feedback" role="status"></div><div id="passwordArea" class="hidden"><h3>Change your password</h3><label>New password<input id="newPassword" type="password" autocomplete="new-password"></label><label>Confirm password<input id="confirmPassword" type="password" autocomplete="new-password"></label><button id="savePassword">SAVE PASSWORD</button></div></section><p id="connectionStatus" class="note" role="status"></p></main><script>
+textarea{width:100%;font:inherit;padding:12px;border:2px solid #17334d;border-radius:10px;min-height:160px}.reportRow{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid #ddd}.dot{width:18px;height:18px;border:2px solid #17334d;border-radius:50%;flex-shrink:0}.gray{background:#c2c7cc}.green{background:#40bf67}.yellow{background:#ffcf40}.red{background:#f56868}.reportDetail{font-size:13px;color:#536472;margin-left:auto}#classReport{margin-top:15px}
+.reportRow{flex-wrap:wrap}.missedWords{font-size:14px;color:#17334d;flex:1;min-width:100px}
+</style></head><body><main class="wrap"><h1>🐸 Frog Teacher Dashboard</h1><p>Change the classroom spelling list and secret completion words.</p><section class="panel" id="loginArea"><h2>Teacher sign in</h2><label for="teacherUsername">Teacher username</label><input id="teacherUsername" value="admin" autocomplete="username"><label for="teacherPassword">Teacher password</label><input id="teacherPassword" type="password" autocomplete="current-password"><button id="teacherLogin">UNLOCK</button><div id="loginMessage" class="feedback" role="status"></div></section><section class="panel hidden" id="teacherEditor"><div id="teacherAccounts" class="hidden"><h2>Add another teacher</h2><label>New teacher username<input id="newTeacherUsername" maxlength="30" autocomplete="off" placeholder="For example, msmith"></label><label>Starting password<input id="newTeacherPassword" type="password" autocomplete="new-password"></label><button id="addTeacher">CREATE TEACHER LOGIN</button><p class="note">Give that teacher the dashboard link, username and starting password. They will have their own class and can change their password after signing in.</p><div id="accountMessage" role="status"></div></div><h2>Your classes</h2><label for="teacherClass">Choose a class</label><select id="teacherClass" style="font:inherit;padding:10px;width:100%;border:2px solid #17334d;border-radius:10px"></select><label>New class name<input id="newClassName" maxlength="40" placeholder="For example, Morning Class"></label><button id="createClass">ADD CLASS</button><p class="note">Each class keeps its own roster, words, secret codes, and report. Rosters stay saved until you edit them.</p><h2>Class completion report</h2><p class="note">Gray: not finished · Green: 0 challenging words · Yellow: 1–5 · Red: 6–10. Each word counts only once, including retries. Shows each child's latest completed game.</p><button id="refreshReport">REFRESH REPORT</button><button id="resetReport">RESET REPORT</button><div id="classReport"></div><div id="reportMessage" class="feedback" role="status"></div><h3>Class names</h3><p class="note">One first name per line. If two children share a first name, add a last initial for each (for example, Sam B and Sam T).</p><textarea id="rosterNames" aria-label="Class names, one per line"></textarea><button id="saveRoster">SAVE CLASS NAMES</button><h2 style="margin-top:24px">Spelling words</h2><p class="note">Worlds 1–2 use words 1–5. Worlds 3–4 use words 6–10.</p><div class="teacherGrid" id="wordInputs"></div><h2>Secret completion words</h2><p class="note">Each distinct spelling word missed counts once across the entire game, including retries.</p><div class="teacherGrid" id="codeInputs"></div><button id="saveWords">SAVE WORDS AND CODES</button><button id="changePasswordBtn">CHANGE PASSWORD</button><button id="teacherClose">SIGN OUT</button><div id="teacherMessage" class="feedback" role="status"></div><div id="passwordArea" class="hidden"><h3>Change your password</h3><label>New password<input id="newPassword" type="password" autocomplete="new-password"></label><label>Confirm password<input id="confirmPassword" type="password" autocomplete="new-password"></label><button id="savePassword">SAVE PASSWORD</button></div></section><p id="connectionStatus" class="note" role="status"></p></main><script>
 // Paste the SAME Google Apps Script Web App URL used in index.html.
 const CLOUD_URL = "https://script.google.com/macros/s/AKfycbyDSzyWZtV_TqwzgseHWuhhgDqxB5DBd5KDrvVlS4M7mJ_90DXQI8o1aTHOuHrakXRJyg/exec";
 const $=id=>document.getElementById(id);
+let teacherUsername='admin';
+let selectedClassId='main',classList=[];
 let currentPassword='',words=[],secretCodes=[];
 const CODE_RANGES=['0 challenging words','1–3 challenging words','4–7 challenging words','8–10 challenging words'];
 async function cloudRequest(action,data={}){
  if(!CLOUD_URL) throw new Error("Cloud URL is not configured yet.");
- const params=new URLSearchParams({action,...Object.fromEntries(Object.entries(data).map(([k,v])=>[k,typeof v==="string"?v:JSON.stringify(v)]))});
+ const params=new URLSearchParams({action,classId:selectedClassId,teacherName:teacherUsername,...Object.fromEntries(Object.entries(data).map(([k,v])=>[k,typeof v==="string"?v:JSON.stringify(v)]))});
  const response=await fetch(CLOUD_URL+(CLOUD_URL.includes("?")?"&":"?")+params.toString(),{method:"GET",cache:"no-store"});
  if(!response.ok)throw new Error("Cloud request failed ("+response.status+").");
  const result=await response.json();if(!result.ok)throw new Error(result.error||"Cloud service error.");return result;
@@ -23,10 +27,11 @@ async function teacherLogin(){
  $('teacherLogin').disabled=true;$('loginMessage').textContent='Signing in…';
  try{
   if(!CLOUD_URL)throw Error('Connect this dashboard first: paste your Apps Script Web App URL into CLOUD_URL.');
-  const password=$('teacherPassword').value,r=await cloudRequest('login',{password});if(!r.authenticated)throw Error('That password did not match.');
+  teacherUsername=$('teacherUsername').value.trim().toLowerCase();const password=$('teacherPassword').value,r=await cloudRequest('login',{password});if(!r.authenticated)throw Error('That password did not match.');
+  const classes=await cloudRequest('getClasses',{password});classList=classes.classes;selectedClassId=classList[0].id;renderClassChoices();
   const data=await cloudRequest('getWords');if(!Array.isArray(data.words)||data.words.length!==10)throw Error('The shared spelling list could not load.');
   if(!Array.isArray(data.codes)||data.codes.length!==4)throw Error('Update Code.gs to the version that supports secret codes, then redeploy it.');
-  currentPassword=password;words=data.words;secretCodes=data.codes;buildWordInputs();$('teacherPassword').value='';$('loginMessage').textContent='';$('teacherMessage').textContent='';$('loginArea').classList.add('hidden');$('teacherEditor').classList.remove('hidden');
+  currentPassword=password;$('teacherAccounts').classList.toggle('hidden',teacherUsername!=='admin');words=data.words;secretCodes=data.codes;buildWordInputs();$('teacherPassword').value='';$('loginMessage').textContent='';$('teacherMessage').textContent='';$('loginArea').classList.add('hidden');$('teacherEditor').classList.remove('hidden');await refreshReport(true);
  }catch(e){$('loginMessage').textContent=e.message;}finally{$('teacherLogin').disabled=false;}
 }
 async function saveWordList(){
@@ -34,7 +39,7 @@ async function saveWordList(){
  if(newWords.some(w=>!w)||new Set(newWords.map(w=>w.toLowerCase())).size!==10){$('teacherMessage').textContent='Enter 10 different spelling words.';return;}
  if(newCodes.some(w=>!w)||new Set(newCodes.map(w=>w.toLowerCase())).size!==4){$('teacherMessage').textContent='Enter four different secret code words.';return;}
  $('saveWords').disabled=true;
- try{await cloudRequest('saveWords',{password:currentPassword,words:JSON.stringify(newWords),codes:JSON.stringify(newCodes)});words=newWords;secretCodes=newCodes;$('teacherMessage').textContent='Saved for the whole class! Refresh the student games to load the new list. Update between games.';}
+ try{await cloudRequest('saveWords',{password:currentPassword,words:JSON.stringify(newWords),codes:JSON.stringify(newCodes)});words=newWords;secretCodes=newCodes;await refreshReport(false);$('teacherMessage').textContent='Saved for the whole class! Refresh the student games to load the new list. Changing spelling words starts a fresh report. Update between games.';}
  catch(e){$('teacherMessage').textContent='Could not save: '+e.message;}finally{$('saveWords').disabled=false;}
 }
 async function saveNewPassword(){
@@ -43,7 +48,55 @@ async function saveNewPassword(){
  try{await cloudRequest('changePassword',{password:currentPassword,newPassword:password});currentPassword=password;$('newPassword').value='';$('confirmPassword').value='';$('passwordArea').classList.add('hidden');$('teacherMessage').textContent='Password changed.';}
  catch(e){$('teacherMessage').textContent='Could not change password: '+e.message;}finally{$('savePassword').disabled=false;}
 }
-function signOut(){currentPassword='';words=[];secretCodes=[];$('wordInputs').innerHTML='';$('codeInputs').innerHTML='';$('newPassword').value='';$('confirmPassword').value='';$('passwordArea').classList.add('hidden');$('teacherEditor').classList.add('hidden');$('loginArea').classList.remove('hidden');$('teacherPassword').value='';$('teacherPassword').focus();}
+function signOut(){clearInterval(reportPoll);reportPoll=null;$('newTeacherPassword').value='';$('teacherAccounts').classList.add('hidden');$('classReport').innerHTML='';$('rosterNames').value='';currentPassword='';words=[];secretCodes=[];$('wordInputs').innerHTML='';$('codeInputs').innerHTML='';$('newPassword').value='';$('confirmPassword').value='';$('passwordArea').classList.add('hidden');$('teacherEditor').classList.add('hidden');$('loginArea').classList.remove('hidden');$('teacherPassword').value='';$('teacherPassword').focus();}
+function renderClassChoices(){
+ $('teacherClass').innerHTML='';classList.forEach(c=>{const option=document.createElement('option');option.value=c.id;option.textContent=c.name;$('teacherClass').appendChild(option);});$('teacherClass').value=selectedClassId;
+}
+async function switchClass(){
+ selectedClassId=$('teacherClass').value;clearInterval(reportPoll);reportPoll=null;
+ try{const r=await cloudRequest('getWords');words=r.words;secretCodes=r.codes;buildWordInputs();$('teacherMessage').textContent='';await refreshReport(true);}catch(e){$('teacherMessage').textContent=e.message;}
+}
+async function createClass(){
+ $('createClass').disabled=true;
+ try{const r=await cloudRequest('createClass',{password:currentPassword,name:$('newClassName').value});classList=r.classes;selectedClassId=r.classId;renderClassChoices();$('newClassName').value='';await switchClass();}
+ catch(e){$('teacherMessage').textContent=e.message;}finally{$('createClass').disabled=false;}
+}
+async function addTeacher(){
+ $('addTeacher').disabled=true;
+ try{await cloudRequest('createTeacher',{password:currentPassword,newTeacherName:$('newTeacherUsername').value,newTeacherPassword:$('newTeacherPassword').value});$('newTeacherPassword').value='';const all=await cloudRequest('getClasses',{password:currentPassword});classList=all.classes;renderClassChoices();$('accountMessage').textContent='Teacher login created. They can sign in and manage their own classes.';}
+ catch(e){$('accountMessage').textContent=e.message;}finally{$('addTeacher').disabled=false;}
+}
+$('addTeacher').onclick=addTeacher;
+$('teacherClass').onchange=switchClass;$('createClass').onclick=createClass;
+let reportPoll=null;
+async function refreshReport(loadRoster=false){
+ if(!currentPassword)return;
+ try{
+  const r=await cloudRequest('getReport',{password:currentPassword});if(!currentPassword)return;
+  if(loadRoster)$('rosterNames').value=r.names.join('\n');
+  $('classReport').innerHTML='';
+  r.report.sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:'base'})).forEach(item=>{
+   const row=document.createElement('div');row.className='reportRow';
+   const dot=document.createElement('span');const color=!item.completed?'gray':item.misses===0?'green':item.misses<=5?'yellow':'red';dot.className='dot '+color;
+   const name=document.createElement('strong');name.textContent=item.name;const detail=document.createElement('span');detail.className='reportDetail';detail.textContent=item.completed?item.misses+' challenging words · '+new Date(item.completedAt).toLocaleString():'Not completed';
+   row.appendChild(dot);row.appendChild(name);
+   if(item.completed){const missed=document.createElement('span');missed.className='missedWords';missed.textContent=item.missedWords&&item.missedWords.length?item.missedWords.join(', '):item.misses===0?'No words missed':'Word list unavailable';row.appendChild(missed);}
+   row.appendChild(detail);$('classReport').appendChild(row);
+  });
+  $('reportMessage').textContent=r.names.length?'Report updated.':'Add your class names below.';
+  if(!reportPoll)reportPoll=setInterval(()=>{if(!document.hidden&&currentPassword)refreshReport(false);},15000);
+ }catch(e){$('reportMessage').textContent='Could not load report: '+e.message;}
+}
+async function saveRoster(){
+ const names=$('rosterNames').value.split(/\r?\n/).map(n=>n.trim()).filter(Boolean);$('saveRoster').disabled=true;
+ try{await cloudRequest('saveRoster',{password:currentPassword,names:JSON.stringify(names)});await refreshReport(true);$('reportMessage').textContent='Class names saved. Refresh student games before playing.';}
+ catch(e){$('reportMessage').textContent=e.message;}finally{$('saveRoster').disabled=false;}
+}
+async function resetReport(){
+ if(!confirm('Clear completion dots and start a fresh activity? Children must refresh their games and start again.'))return;
+ try{await cloudRequest('resetReport',{password:currentPassword});await refreshReport(false);$('reportMessage').textContent='Report reset. Refresh student games for the new activity.';}catch(e){$('reportMessage').textContent=e.message;}
+}
+$('refreshReport').onclick=()=>refreshReport(false);$('saveRoster').onclick=saveRoster;$('resetReport').onclick=resetReport;
 $('teacherLogin').onclick=teacherLogin;$('teacherPassword').addEventListener('keydown',e=>{if(e.key==='Enter')teacherLogin();});$('saveWords').onclick=saveWordList;$('changePasswordBtn').onclick=()=>$('passwordArea').classList.toggle('hidden');$('savePassword').onclick=saveNewPassword;$('teacherClose').onclick=signOut;
 $('connectionStatus').textContent=CLOUD_URL?'Shared cloud storage configured.':'Setup needed: put the same CLOUD_URL in this dashboard and the student game.';
 </script></body></html>
