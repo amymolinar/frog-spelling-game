@@ -504,7 +504,7 @@ $("mapAfterWin").onclick=()=>{if(currentWorld===4&&!replayRequired){playerSessio
 if("speechSynthesis"in window){speechSynthesis.onvoiceschanged=()=>{}}
 async function loadClasses(){
  $('playBtn').disabled=true;
- try{const r=await cloudRequest('getClasses');$('studentClass').innerHTML='';r.classes.forEach(c=>{const option=document.createElement('option');option.value=c.id;option.textContent=c.name;$('studentClass').appendChild(option);});selectedClassId=r.classes[0].id;await loadSharedWords();}
+ try{const r=await cloudRequest('getClasses');$('studentClass').innerHTML='';r.classes.forEach(c=>{const option=document.createElement('option');option.value=c.id;option.textContent=c.name;$('studentClass').appendChild(option);});if(!r.classes.length){$('nameMessage').textContent='Your teacher needs to add a class first.';return;}selectedClassId=r.classes[0].id;await loadSharedWords();}
  catch(e){$('nameMessage').textContent='Could not load classes. Your teacher may need to update the shared script.';}
 }
 $('studentClass').onchange=()=>{selectedClassId=$('studentClass').value;playerSession=null;$('studentName').value='';sharedReady=false;loadSharedWords();};
