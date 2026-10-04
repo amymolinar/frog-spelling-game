@@ -224,7 +224,7 @@ async function beginStudentGame(){
 async function sendCompletionReport(){
  const pending=JSON.parse(localStorage.getItem('frogPendingReport')||'null');if(!pending)return;
  $('reportStatus').textContent='Sending your completion to your teacher…';$('retryReport').disabled=true;
- try{await cloudRequest('completeGame',pending);if(localStorage.getItem('frogPendingReport')===JSON.stringify(pending))localStorage.removeItem('frogPendingReport');$('reportStatus').textContent='Your teacher received your completion!';$('retryReport').classList.add('hidden');}
+ try{const receipt=await cloudRequest('completeGame',pending);if(localStorage.getItem('frogPendingReport')===JSON.stringify(pending))localStorage.removeItem('frogPendingReport');$('reportStatus').textContent=receipt.alreadyRecorded?'You already have a score for today. Your first score stays saved!':'Your teacher received your first completion for today!';$('retryReport').classList.add('hidden');}
  catch(e){$('reportStatus').textContent='Your game is complete. The report could not send: '+e.message;$('retryReport').classList.remove('hidden');}
  finally{$('retryReport').disabled=false;}
 }
@@ -279,11 +279,11 @@ function monsterArt(kind){
 }
 function bumpFrog(time,sourceX){
  if(time<hitProtectedUntil)return;
- travelDuration+=5000;
+ 
  $("travelTimer").textContent=Math.max(0,Math.ceil((travelDuration-(Date.now()-travelStart))/1000))+"s";
  knockVelocity=(frogX+27<=sourceX?-1:1)*400;frogVY=Math.max(frogVY,210);onGround=false;jumping=true;
  jumpsUsed=Math.max(1,jumpsUsed);hitProtectedUntil=time+1200;
- $('travelMessage').textContent='Boing! +5 seconds — keep hopping!';playBump();
+ $('travelMessage').textContent='Boing! You are okay — keep hopping!';playBump();
 }
 function updateSeed(dt,time){
  if(!seedShot)return;
@@ -343,8 +343,9 @@ function updateAdventure(dt,time){
  if(onGround)jumpsUsed=0;
  jumping=!onGround;
  if(frogY<-180){
-  startTravel(currentWorld);
-  $('travelMessage').textContent='Oops, a pit! Try this world again from the beginning.';
+  frogX=90;cameraX=0;frogY=0;frogVY=0;onGround=true;jumping=false;jumpsUsed=0;knockVelocity=0;successUntil=0;pitFalls++;
+  seedShot=null;$('seedShot').classList.add('hidden');spawnMonster();renderTerrain();$('travelFrog').style.transform='translateY(0)';
+  $('travelMessage').textContent='Back to the start! The countdown keeps going — try that jump again.';
   return;
  }
  $('travelFrog').style.transform=`translateY(${-frogY}px)`;
