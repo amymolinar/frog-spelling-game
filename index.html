@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Frog's Spelling Adventure</title>
+<style>
+:root{--ink:#17334d;--cream:#fff9df;--pink:#ff78a8;--yellow:#ffe45c;--blue:#38bdf8;--green:#62d96b}
+*{box-sizing:border-box} body{margin:0;background:#75d9ff;color:var(--ink);font-family:"Trebuchet MS",Arial,sans-serif}
+button,input,textarea{font:inherit} button{cursor:pointer;border:3px solid #17334d;border-radius:12px;padding:10px 16px;font-weight:900;box-shadow:0 4px 0 #17334d;background:var(--yellow);color:#17334d}button:active{transform:translateY(3px);box-shadow:0 1px 0 #17334d}
+.wrap{max-width:1050px;margin:auto;padding:14px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-weight:1000;font-size:clamp(22px,4vw,36px);text-shadow:2px 2px #fff;letter-spacing:1px}.teacherBtn{background:#ffb3d1}
+.panel{background:var(--cream);border:4px solid var(--ink);border-radius:18px;padding:18px;box-shadow:0 7px 0 #17334d;margin:12px 0}
+h1,h2,h3{margin:5px 0 12px} .center{text-align:center}.hidden{display:none!important}
+.hero{min-height:430px;position:relative;overflow:hidden;background:linear-gradient(#64d1ff 0 68%,#b6ef78 68%);border:4px solid var(--ink);border-radius:18px;box-shadow:0 7px 0 #17334d}
+.cloud{position:absolute;background:white;border-radius:40px;width:100px;height:30px;top:55px;opacity:.95}.cloud:before,.cloud:after{content:"";position:absolute;background:white;border-radius:50%;bottom:0}.cloud:before{width:45px;height:45px;left:15px}.cloud:after{width:58px;height:52px;left:42px}.c1{left:9%}.c2{right:12%;top:105px;transform:scale(.8)}
+.hill{position:absolute;bottom:92px;background:#54c95c;width:270px;height:130px;border-radius:50% 50% 0 0}.h1{left:-50px}.h2{right:-45px;width:340px;height:165px;background:#3bbd62}
+.ground{position:absolute;bottom:0;height:95px;background:repeating-linear-gradient(90deg,#ad6b3d 0 38px,#8e512e 38px 42px);width:100%;border-top:12px solid #47c94e}
+.grass{position:absolute;bottom:84px;width:100%;height:14px;background:repeating-linear-gradient(90deg,#4bd14f 0 24px,#38b946 24px 34px)}
+.heroContent{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:420px;padding:22px;text-align:center}
+.pixelTitle{font-weight:1000;font-size:clamp(32px,6vw,58px);line-height:1.04;color:#ffef6e;text-shadow:4px 4px 0 #17334d,-2px -2px 0 #17334d,2px -2px 0 #17334d,-2px 2px 0 #17334d}
+.frog{font-size:74px;filter:drop-shadow(3px 4px 0 #17334d);animation:bob 1.2s infinite ease-in-out}@keyframes bob{50%{transform:translateY(-8px)}} .subtitle{font-size:19px;font-weight:800;text-shadow:1px 1px white}
+.big{font-size:23px;padding:14px 28px;background:#ffdc44;margin:8px}.small{font-size:13px;padding:7px 10px}
+.gameTop{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.progress{height:20px;border:3px solid var(--ink);border-radius:20px;background:#fff;overflow:hidden;flex:1;min-width:130px}.progress span{display:block;height:100%;background:#59d66d;width:0%;transition:width .2s}
+.scene{position:relative;height:300px;overflow:hidden;border:4px solid var(--ink);border-radius:15px;background:linear-gradient(#68d5ff 0 66%,#b8ed7b 66%);image-rendering:pixelated}
+.scene .ground{height:52px}.scene .grass{bottom:41px;height:11px}.scene .hill{bottom:42px}.actor{position:absolute;bottom:48px;left:12%;font-size:47px;z-index:3;transition:left .5s}.enemy{position:absolute;bottom:48px;font-size:34px;z-index:2;animation:floaty 2.2s ease-in-out infinite alternate}.e1{left:36%}.e2{left:54%;animation-delay:.4s}.e3{left:72%;animation-delay:.9s}@keyframes floaty{to{transform:translateY(-25px)}} .seed{position:absolute;left:75%;bottom:110px;font-size:20px;animation:seed 2s infinite}@keyframes seed{0%{transform:translate(0,0)}100%{transform:translate(-100px,90px);opacity:.2}}
+.block{position:absolute;top:35%;left:44%;background:#ffb63d;border:4px solid #9b4c23;border-radius:6px;padding:7px;font-size:23px;font-weight:1000}
+.sceneCaption{position:absolute;top:12px;left:12px;background:#fff9dfd9;border:2px solid var(--ink);border-radius:9px;padding:6px 10px;font-weight:900}
+.bossArea{display:flex;gap:18px;align-items:center;justify-content:center;flex-wrap:wrap;min-height:170px}.boss{font-size:95px;transition:transform .35s,opacity .6s}.boss.hit{transform:rotate(-20deg) translateX(20px) scale(.85)}.boss.fall{transform:translateY(450px) rotate(160deg);opacity:0}.hearts{font-size:24px;letter-spacing:3px}
+.wordPrompt{font-size:clamp(27px,5vw,42px);font-weight:1000;background:white;border:3px dashed #ff78a8;border-radius:14px;padding:12px 18px;display:inline-block;min-width:160px}
+.answerRow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px 0}.answerRow input{border:3px solid var(--ink);border-radius:10px;padding:12px;font-size:24px;width:min(350px,90%);text-align:center;font-weight:800}
+.feedback{min-height:32px;font-size:19px;font-weight:900}.success{color:#17883a}.oops{color:#b31d4b}
+.teacherGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.teacherGrid label{font-weight:900}.teacherGrid input{display:block;width:100%;padding:10px;border:2px solid #789;border-radius:8px;margin-top:4px}
+.note{font-size:14px;line-height:1.45}.worldCards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.worldCard{background:#fff;border:3px solid var(--ink);border-radius:12px;padding:10px;text-align:center;font-weight:900}.worldCard.locked{opacity:.55;filter:grayscale(.7)}
+footer{text-align:center;font-size:12px;padding:15px}
+@media(max-width:600px){.worldCards{grid-template-columns:repeat(2,minmax(0,1fr))}.scene{height:250px}.teacherGrid{grid-template-columns:1fr}.hero{min-height:390px}.heroContent{min-height:380px}}
+#travelFrog{transition:none}
+
+#monster{animation:none;line-height:1;width:44px;height:44px;bottom:48px;font-size:40px;transform-origin:bottom center}
+#monster.squished{transform:scaleY(.22) scaleX(1.25);opacity:.5;transition:transform .18s,opacity .3s}
+#travelFrog{line-height:1;width:55px;height:55px}
+.battleStage{position:relative;width:min(460px,100%);height:230px;overflow:hidden;background:linear-gradient(#a0e8ff 85%,#74d35e 85%);border:3px solid var(--ink);border-radius:16px}
+#battleFrog{position:absolute;left:7%;bottom:30px;font-size:64px;z-index:3}
+#tongue{position:absolute;left:18%;bottom:58px;width:54%;height:12px;background:#fa6988;border:2px solid #b92356;border-radius:12px;z-index:4;transform:scaleX(0);transform-origin:left center}
+#tongue.lash{animation:tongueLash .55s ease-in-out}
+@keyframes tongueLash{0%,100%{transform:scaleX(0)}40%,65%{transform:scaleX(1)}}
+.boss{position:absolute;right:9%;bottom:42px;width:110px;height:130px;font-size:initial;transition:none;transform-origin:center}
+.boss svg{width:100%;height:100%;overflow:visible}
+.boss .arm{transform-box:fill-box;transform-origin:50% 15%;animation:armWave .55s infinite alternate}
+.boss .arm.right{animation-delay:-.55s}.boss .leg{transform-box:fill-box;transform-origin:50% 0%;animation:legWave .7s infinite alternate}.boss .leg.right{animation-delay:-.7s}
+@keyframes armWave{from{transform:rotate(-28deg)}to{transform:rotate(28deg)}}@keyframes legWave{from{transform:rotate(-12deg)}to{transform:rotate(12deg)}}
+.boss.hit{animation:bossHit .55s}@keyframes bossHit{45%{transform:translateX(28px) rotate(18deg)}}
+.boss.fall{animation:bossFall 1.2s ease-in forwards}@keyframes bossFall{30%{transform:translateY(-80px) rotate(-20deg);opacity:1}100%{transform:translateY(300px) rotate(120deg);opacity:0}}
+#battleFrog.dance,#danceFrog{animation:frogDance .3s infinite alternate}@keyframes frogDance{from{transform:rotate(-12deg) translateY(0)}to{transform:rotate(12deg) translateY(-12px)}}
+
+#terrain{position:absolute;inset:0;pointer-events:none}.ledge{position:absolute;height:18px;background:repeating-linear-gradient(90deg,#c78649 0 25px,#9d6031 25px 29px);border:3px solid #714423;border-top:7px solid #50ce55;border-radius:5px;z-index:2}.pit{position:absolute;bottom:0;height:53px;background:linear-gradient(#17334d,#071526);border-left:4px solid #694126;border-right:4px solid #694126;z-index:2}.pit:after{content:"";position:absolute;bottom:5px;left:8px;right:8px;border-bottom:3px dashed #516685}.sceneCaption{z-index:5}#travelFrog{z-index:4}.scene .cloud,.scene .hill{will-change:transform}
+#monster{width:94px;height:94px;font-size:90px}
+#travelFrog svg{width:55px;height:55px;overflow:visible}.frogGasp{display:none}#travelFrog.startled .frogGasp{display:block}#travelFrog.startled .frogSmile{display:none}#travelFrog.startled .pupil{r:2.5px}
+.scene{height:390px}@media(max-width:600px){.scene{height:370px}}
+
+#lightning{position:absolute;inset:0;display:none;z-index:7;pointer-events:none;color:#fff8a4;font:bold 180px Georgia;text-align:center;background:rgba(230,245,255,.12);text-shadow:0 0 22px #fff}
+#travelScene.bossArrival #lightning{display:block;animation:stormFlash 1.3s forwards}
+@keyframes stormFlash{0%,25%,65%,100%{opacity:0}12%,48%{opacity:1}}
+#travelScene.bossArena{background:linear-gradient(#727bbb 0 66%,#a3d276 66%)}
+#travelScene.bossArena #travelFrog{visibility:hidden}
+#travelScene #battleFrog{bottom:48px;width:55px;height:55px;font-size:47px;z-index:4}
+#battleFrog svg{width:55px;height:55px}.battleStage{display:none}
+#travelScene #bossSprite{bottom:48px;right:9%;z-index:4}
+#travelScene #bossSprite.arriving{animation:bossDrop 1.35s ease-in forwards}
+@keyframes bossDrop{0%,20%{transform:translateY(-430px)}75%{transform:translateY(0)}85%{transform:translateY(-24px)}100%{transform:translateY(0)}}
+#travelScene #tongue{bottom:72px;left:calc(25% + 35px);width:calc(66% - 90px);z-index:5}
+@media(prefers-reduced-motion:reduce){#travelScene.bossArrival #lightning{animation:none;opacity:.2}#travelScene #bossSprite.arriving{animation-duration:.3s}}
+
+#travelScene.world1{background:linear-gradient(#68d5ff 0 66%,#c5ef8a 66%)}
+#travelScene.world2{background:linear-gradient(#a2e7ff 0 66%,#efc8ed 66%)}
+#travelScene.world2 .hill{background:#85d683}#travelScene.world2 .h2{background:#62c67f}
+#travelScene.world3{background:linear-gradient(#b4dcdd 0 66%,#9dcb99 66%)}#travelScene.world3 .hill{background:#448877}#travelScene.world3 .h2{background:#317562}
+#travelScene.world4{background:linear-gradient(#b478ce,#ffb988 66%,#a7b76e 66%)}#travelScene.world4 .hill{background:#677b86}#travelScene.world4 .h2{background:#4f647c}#travelScene.world4 .cloud{background:#ffe7c9}#travelScene.world4 .cloud:before,#travelScene.world4 .cloud:after{background:#ffe7c9}
+#travelScene.bossArena{background:linear-gradient(#727bbb 0 66%,#a3d276 66%)}
+#worldDecor{position:absolute;inset:0;pointer-events:none;z-index:1}.scenery{position:absolute;bottom:50px;font-size:40px;white-space:nowrap}.hillFlower{position:absolute;font-size:25px}.worldSun{position:absolute;right:14%;top:22px;font-size:50px}
+#seedShot{position:absolute;width:18px;height:18px;font-size:0;background:#946027;border:3px solid #503818;border-radius:50%;z-index:4;box-shadow:2px 2px #fff6}
+#monster svg{width:94px;height:94px;overflow:visible}.monsterEyes{position:absolute;left:29px;top:33px;font:bold 29px Arial;color:#17334d;transform:rotate(4deg)}
+
+.frogCheer,.happyEyes{display:none}#travelFrog.successful .frogCheer,#travelFrog.successful .happyEyes{display:block}#travelFrog.successful .frogSmile,#travelFrog.successful .frogGasp,#travelFrog.successful .pupil{display:none}
+.worldSun{width:65px;height:65px}.worldSun svg{width:100%;height:100%;overflow:visible}.sunSmile{display:none}.worldSun.cheering .sunSmile{display:block}.worldSun.cheering .sunNeutral{display:none}
+#monster[data-tough="true"]:after{content:attr(data-hits) " stomps";position:absolute;left:7px;top:-19px;font:bold 12px Arial;background:#fff5b4;border:2px solid #17334d;border-radius:8px;padding:3px;white-space:nowrap}
+.letterBlanks{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin-top:12px}.letterSlot{width:32px;height:42px;border-bottom:4px solid #17334d;font:bold 28px monospace;text-align:center}.letterSlot.extra{color:#b31d4b;border-color:#b31d4b}#completionCode{background:#fff7ad;border:3px dashed #17334d;border-radius:14px;padding:14px;margin:12px;font-size:22px}#completionCode strong{display:block;font-size:38px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div class="brand">🐸 FROG'S SPELLING ADVENTURE</div><button class="small" id="musicToggle" aria-pressed="true">♫ MUSIC ON</button></div>
+
+  <section id="home" class="hero">
+    <div class="cloud c1"></div><div class="cloud c2"></div><div class="hill h1"></div><div class="hill h2"></div><div class="grass"></div><div class="ground"></div>
+    <div class="heroContent">
+      <div class="pixelTitle">FROG'S<br>SPELLING<br>ADVENTURE!</div>
+      <div class="frog">🐸</div>
+      <div class="subtitle">Hop, stomp, spell, and save the day!</div>
+      <button class="big" id="playBtn">▶ PLAY</button>
+      <button id="resetProgress" class="small">RESET PLAYER PROGRESS</button>
+    </div>
+  </section>
+
+  <section id="worldSelect" class="panel hidden">
+    <h2 class="center">🌈 Choose Your World!</h2>
+    <div class="worldCards" id="worldCards"></div>
+    <p class="center note">Beat a boss to unlock the next world. If a boss is tricky, try that world again!</p>
+    <div class="center"><button id="homeBtn">BACK</button></div>
+  </section>
+
+  <section id="travel" class="panel hidden">
+    <div class="gameTop"><strong id="worldTitle">WORLD 1</strong><div class="progress"><span id="travelProgress"></span></div><strong id="travelTimer">60s</strong><button class="small" id="quitTravel">QUIT</button></div>
+    <div class="scene" id="travelScene">
+      <div class="cloud c1"></div><div class="cloud c2"></div><div class="hill h1"></div><div class="hill h2"></div><div class="grass"></div><div class="ground"></div>
+      <div class="sceneCaption" id="sceneCaption">Sunny Meadow</div>
+      <div id="worldDecor" aria-hidden="true"></div><div id="seedShot" class="hidden" aria-hidden="true">●</div><div id="lightning" aria-hidden="true">ϟ</div><div id="terrain"></div><div class="actor" id="travelFrog" aria-label="Frog"><svg viewBox="0 0 60 60" role="img" aria-label="Happy frog"><ellipse cx="30" cy="38" rx="26" ry="19" fill="#54d34b" stroke="#21683b" stroke-width="2"/><circle cx="17" cy="20" r="12" fill="#54d34b" stroke="#21683b" stroke-width="2"/><circle cx="43" cy="20" r="12" fill="#54d34b" stroke="#21683b" stroke-width="2"/><circle cx="17" cy="20" r="8" fill="white"/><circle cx="43" cy="20" r="8" fill="white"/><circle class="pupil" cx="17" cy="21" r="4" fill="#17334d"/><circle class="pupil" cx="43" cy="21" r="4" fill="#17334d"/><path class="frogSmile" d="M17 39 Q30 52 43 39" fill="none" stroke="#17334d" stroke-width="3" stroke-linecap="round"/><path class="frogCheer" d="M16 38 Q30 58 44 38 Z" fill="#17334d"/><path class="happyEyes" d="M11 23 Q17 13 23 23 M37 23 Q43 13 49 23" fill="none" stroke="#17334d" stroke-width="3" stroke-linecap="round"/><ellipse class="frogGasp" cx="30" cy="42" rx="7" ry="9" fill="#17334d"/><ellipse cx="10" cy="39" rx="5" ry="3" fill="#ffacb7"/><ellipse cx="50" cy="39" rx="5" ry="3" fill="#ffacb7"/></svg></div>
+      <div class="enemy hidden" id="monster">🐞</div>
+    </div>
+    <p class="center note" id="travelMessage">Tap JUMP to stomp the silly creatures!</p>
+    <div class="center"><button class="big" id="jumpBtn">⬆ JUMP / STOMP</button></div>
+  </section>
+
+  <section id="bossScreen" class="panel hidden">
+    <div class="gameTop"><strong id="bossWorld">WORLD 1 BOSS</strong><button class="small" id="leaveBoss">WORLD MAP</button></div>
+    <h2 class="center" id="bossIntro">A shape boss blocks the way!</h2>
+    <div class="bossArea"><div class="battleStage"><div id="battleFrog">🐸</div><div id="tongue"></div><div class="boss" id="bossSprite"></div></div><div><div class="hearts" id="bossHearts">❤️❤️❤️❤️❤️</div><div class="note center">Five words. Five tongue slaps!</div></div></div>
+    <div class="center">
+      <p><strong>Listen carefully, then spell the word.</strong></p>
+      <div id="spokenWord" class="wordPrompt">Ready?</div>
+      <div id="letterBlanks" class="letterBlanks" aria-hidden="true"></div><div class="answerRow"><input id="spellingInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type the spelling word" placeholder="Type the word here"><button id="submitWord">SPELL IT!</button></div>
+      <div class="feedback" id="feedback" aria-live="polite"></div>
+      <button class="small" id="hearAgain">🔊 HEAR WORD AGAIN</button>
+    </div>
+  </section>
+
+  <section id="victory" class="hero hidden">
+    <div class="cloud c1"></div><div class="cloud c2"></div><div class="hill h1"></div><div class="hill h2"></div><div class="grass"></div><div class="ground"></div>
+    <div class="heroContent"><h1 id="victoryTitle" class="pixelTitle">WORLD CLEAR!</h1><div class="frog" id="danceFrog">🐸💃</div><h2 id="victoryText">You did it!</h2><p id="victorySub" class="subtitle">Great spelling!</p><div id="completionCode" class="hidden" role="status"></div><button class="big" id="nextBtn">NEXT WORLD ▶</button><button id="mapAfterWin">WORLD MAP</button></div>
+  </section>
+
+
+  <footer>Made for brave spellers. Original retro-inspired characters and artwork.</footer>
+</div>
+<script>
+/*
+  CONFIGURATION:
+  After deploying the included Google Apps Script, paste its Web App URL below.
+  Example: https://script.google.com/macros/s/DEPLOYMENT_ID/exec
+*/
+const CLOUD_URL = "https://script.google.com/macros/s/AKfycbyDSzyWZtV_TqwzgseHWuhhgDqxB5DBd5KDrvVlS4M7mJ_90DXQI8o1aTHOuHrakXRJyg/exec";
+const DEFAULT_WORDS = ["ship","frog","crash","stamp","black","smile","shine","chop","plant","bright"];
+const WORLD_NAMES = ["Sunny Meadow","Butterfly Garden","Mushroom Meadow","Sunset Garden"];
+const BOSS_NAMES = ["Triangle Boss","Square Boss","Circle Boss","Rectangle Boss"];
+const BOSS_EMOJI = ["🔺","🟦","⭕","▭"];
+let frogX=12,jumping=false,jumpTimeout=null,frogY=0,frogVY=0,monster=null,spawnAt=0,monsterNumber=0,stompCount=0;
+let secretCodes=["fish","hat","dog","bug"];
+try{const saved=JSON.parse(localStorage.getItem("frogSecretCodes")||"null");if(Array.isArray(saved)&&saved.length===4)secretCodes=saved;}catch(e){}
+const CODE_RANGES=["0 challenging words","1–3 challenging words","4–7 challenging words","8–10 challenging words"];
+function getDifficultySession(){try{const r=JSON.parse(localStorage.getItem("frogDifficultySession")||"null");if(r&&r.wordKey===JSON.stringify(words)&&Array.isArray(r.missed))return r;}catch(e){}return {wordKey:JSON.stringify(words),missed:[],finished:false};}
+function saveDifficultySession(r){localStorage.setItem("frogDifficultySession",JSON.stringify(r));}
+function markChallengingWord(index){const r=getDifficultySession();if(!r.missed.includes(index))r.missed.push(index);saveDifficultySession(r);}
+function renderLetterBlanks(){const length=Array.from(worldWords(currentWorld)[currentWordIndex]||"").length,value=Array.from($("spellingInput").value);$("letterBlanks").innerHTML="";for(let i=0;i<Math.max(length,value.length);i++){const span=document.createElement("span");span.className="letterSlot"+(i>=length?" extra":"");span.textContent=value[i]||"";$("letterBlanks").appendChild(span);}$("spellingInput").setAttribute("aria-label","Spell the word. "+length+" letters.");}
+const TOUGH_MONSTERS=["grasshopper","bumblebee","snail","cricket"];
+let successUntil=0;
+let seedShot=null,worldDecorations=[];
+const WORLD_MONSTERS=[["ladybug","grasshopper","ant"],["butterfly","bumblebee","sunflower"],["snail","beetle","mushroom"],["moth","firefly","cricket"]];
+let cameraX=0,platforms=[],pits=[],worldLength=12000,onGround=true,pitFalls=0,jumpsUsed=0,knockVelocity=0,hitProtectedUntil=0;
+let battleMisses=0,replayRequired=false;
+let battleBusy=false,battleTimers=[],screenVersion=0;
+const movementKeys = new Set();
+let lastMovementFrame = null;
+let words = [...DEFAULT_WORDS], currentWorld = 1, currentWordIndex = 0, hits = 0, travelInterval = null, travelStart = 0, travelDuration = 60000, travelJumpCount = 0;
+const $ = id => document.getElementById(id);
+const screens = ["home","worldSelect","travel","bossScreen","victory"];
+function showScreen(id){ screenVersion++;battleTimers.forEach(clearTimeout);battleTimers=[];battleBusy=false;clearMovementKeys();clearInterval(travelInterval);if(id!=="travel"){seedShot=null;$("seedShot").classList.add("hidden");monster=null;$("monster").classList.add("hidden");}$("tongue").classList.remove("lash");$("battleFrog").classList.remove("dance"); screens.forEach(s=>$(s).classList.toggle("hidden",s!==id)); }
+function getProgress(){try{return JSON.parse(localStorage.getItem("frogSpellProgress")||'{"completed":[]}')}catch(e){return {completed:[]}}}
+function saveProgress(p){localStorage.setItem("frogSpellProgress",JSON.stringify(p))}
+function worldWords(w){return w<=2?words.slice(0,5):words.slice(5,10)}
+function completed(w){return getProgress().completed.includes(w)}
+function unlocked(w){return w===1||completed(w-1)}
+function renderWorlds(){
+ const host=$("worldCards");host.innerHTML="";
+ for(let w=1;w<=4;w++){
+  const card=document.createElement("div");card.className="worldCard"+(!unlocked(w)?" locked":"");
+  card.innerHTML=`<div style="font-size:30px">${["🌱","🌻","🍄","🌅"][w-1]}</div><div>WORLD ${w}</div><div style="font-size:13px">${completed(w)?"✅ COMPLETE":unlocked(w)?"🔓 READY":"🔒 LOCKED"}</div><div style="font-size:12px">${WORLD_NAMES[w-1]}</div>`;
+  if(unlocked(w)){card.style.cursor="pointer";card.onclick=()=>startTravel(w)}host.appendChild(card);
+ }
+}
+async function cloudRequest(action,data={}){
+ if(!CLOUD_URL) throw new Error("Cloud URL is not configured yet.");
+ const params=new URLSearchParams({action,...Object.fromEntries(Object.entries(data).map(([k,v])=>[k,typeof v==="string"?v:JSON.stringify(v)]))});
+ const response=await fetch(CLOUD_URL+(CLOUD_URL.includes("?")?"&":"?")+params.toString(),{method:"GET",cache:"no-store"});
+ if(!response.ok)throw new Error("Cloud request failed ("+response.status+").");
+ const result=await response.json();if(!result.ok)throw new Error(result.error||"Cloud service error.");return result;
+}
+async function loadSharedWords(){
+ if(!CLOUD_URL)return;
+ try{const r=await cloudRequest('getWords');if(Array.isArray(r.words)&&r.words.length===10)words=r.words;if(Array.isArray(r.codes)&&r.codes.length===4)secretCodes=r.codes;}
+ catch(e){console.warn('Shared word list could not load:',e.message);}
+}
+function speakWord(word){
+ $("spokenWord").textContent="🔊 Listen!";
+ if(!("speechSynthesis" in window)){ $("spokenWord").textContent="Listen, then spell!";return; }
+ speechSynthesis.cancel();
+ const utterance=new SpeechSynthesisUtterance(word);utterance.lang="en-US";utterance.rate=.78;utterance.pitch=1.05;
+ const voices=speechSynthesis.getVoices();const clara=voices.find(v=>/clara/i.test(v.name)&&/microsoft/i.test(v.name));
+ if(clara)utterance.voice=clara;
+ utterance.onend=()=>{if($("bossScreen").classList.contains("hidden")===false)$("spokenWord").textContent="Your turn to spell!";};
+ speechSynthesis.speak(utterance);
+}
+function startTravel(w){
+ if(!unlocked(w)){return}
+ const scene=$('travelScene');$('travel').insertBefore(scene,$('travelMessage'));
+ scene.classList.remove('bossArena','bossArrival');
+ $('bossSprite').style.display='none';$('battleFrog').style.display='none';
+ const difficulty=getDifficultySession();if(difficulty.finished)saveDifficultySession({wordKey:JSON.stringify(words),missed:[],finished:false});
+ currentWorld=w;travelDuration=60000;successUntil=0;$("travelFrog").classList.remove("successful");showScreen("travel");applyWorldTheme(w);$("worldTitle").textContent="WORLD "+w+" — "+WORLD_NAMES[w-1];$("sceneCaption").textContent=WORLD_NAMES[w-1];$("travelProgress").style.width="0%";$("travelTimer").textContent="60s";$("travelMessage").textContent="Use ← → to move. Press SPACE twice for a double jump!";travelJumpCount=0;frogX=12;jumping=false;clearTimeout(jumpTimeout);$("travelFrog").style.left="12%";$("travelFrog").style.transform="translateY(0)";
+ frogX=90;cameraX=0;frogY=0;frogVY=0;onGround=true;jumpsUsed=0;knockVelocity=0;hitProtectedUntil=0;$("travelFrog").style.opacity="1";$("travelFrog").classList.remove("startled");pitFalls=0;monsterNumber=0;stompCount=0;buildTerrain();spawnMonster();renderTerrain();startMusic();
+ travelStart=Date.now();clearInterval(travelInterval);
+ travelInterval=setInterval(()=>{const elapsed=Date.now()-travelStart;const pct=Math.min(100,elapsed/travelDuration*100);$("travelProgress").style.width=pct+"%";$("travelTimer").textContent=Math.max(0,Math.ceil((travelDuration-elapsed)/1000))+"s";
+  if(elapsed>=travelDuration){clearInterval(travelInterval);startBoss(w)}
+ },100);
+}
+function jump(){
+ if($("travel").classList.contains("hidden"))return;
+ if(onGround)jumpsUsed=0;
+ if(jumpsUsed>=2)return;
+ jumpsUsed++;onGround=false;jumping=true;frogVY=550;travelJumpCount++;tone(jumpsUsed===2?880:660,.08,"square",.035);
+}
+function applyWorldTheme(w){
+ const scene=$('travelScene');for(let n=1;n<=4;n++)scene.classList.toggle('world'+n,n===w);
+ seedShot=null;$('seedShot').classList.add('hidden');
+ const motifs=[['🌾','🌼','☘️'],['🌷','🌸','🌻','🌺'],['🍄','🌿','🍄'],['🌾','🌙','✨']][w-1];
+ worldDecorations=Array.from({length:65},(_,i)=>({x:180+i*185,symbol:motifs[i%motifs.length]}));
+ $('worldDecor').innerHTML=worldDecorations.map((p,i)=>`<span class="scenery" id="decor${i}">${p.symbol}</span>`).join('')+`<span class="worldSun" id="worldSun"><svg viewBox="0 0 70 70"><g stroke="#ffca43" stroke-width="4">${Array.from({length:12},(_,i)=>`<path d="M35 1V9" transform="rotate(${i*30} 35 35)"/>`).join('')}</g><circle cx="35" cy="35" r="23" fill="${w===4?'#ffc282':'#ffe36a'}" stroke="#edac36" stroke-width="3"/><circle cx="27" cy="31" r="3" fill="#65482b"/><circle cx="43" cy="31" r="3" fill="#65482b"/><path class="sunNeutral" d="M29 43H41" stroke="#65482b" stroke-width="2"/><path class="sunSmile" d="M24 41Q35 57 46 41" fill="none" stroke="#65482b" stroke-width="3" stroke-linecap="round"/></svg></span>`;
+ document.querySelectorAll('#travelScene .hill').forEach((hill,i)=>{
+  const symbols=w===2?['🌸','🌼','🌺','🌷']:w===3?['🍄','🌿']:w===4?['✨']:['🌼','☘️'];
+  hill.innerHTML=Array.from({length:w===2?16:6},(_,n)=>`<span class="hillFlower" style="left:${12+(n*31)%76}%;bottom:${12+(n*17)%64}px">${symbols[n%symbols.length]}</span>`).join('');
+ });
+}
+function monsterArt(kind){
+ if(kind==='sunflower')return `<svg viewBox="0 0 100 100" role="img" aria-label="Scowling seed-spitting sunflower"><path d="M50 55V96 M50 81Q20 61 22 83Q33 94 50 88 M50 75Q81 60 79 79Q65 90 50 85" fill="#58c65c" stroke="#237441" stroke-width="5"/><g fill="#ffce38" stroke="#df8e1d" stroke-width="2">${Array.from({length:10},(_,i)=>`<ellipse cx="50" cy="17" rx="10" ry="16" transform="rotate(${i*36} 50 40)"/>`).join('')}</g><circle cx="50" cy="40" r="24" fill="#a96931" stroke="#684027" stroke-width="3"/><path d="M33 30L43 35 M57 35L67 30" stroke="#172c36" stroke-width="5"/><circle cx="39" cy="41" r="3"/><circle cx="61" cy="41" r="3"/><path d="M38 53Q50 44 62 53" fill="none" stroke="#172c36" stroke-width="4"/></svg>`;
+ const emoji={ladybug:'🐞',grasshopper:'🦗',ant:'🐜',butterfly:'🦋',bumblebee:'🐝',snail:'🐌'}[kind];
+ if(emoji)return emoji;
+ if(kind==='mushroom')return `<svg viewBox="0 0 100 100" role="img" aria-label="Mushroom monster"><path d="M35 43L31 87Q50 102 70 87L65 43" fill="#ffe5bb" stroke="#79443b" stroke-width="4"/><path d="M6 51Q8 2 50 7Q91 4 95 51Z" fill="#e66568" stroke="#79443b" stroke-width="4"/><g fill="#fff4dc"><circle cx="30" cy="29" r="8"/><circle cx="65" cy="25" r="9"/><circle cx="78" cy="44" r="5"/></g><path d="M37 62L45 66M55 66L64 62" stroke="#17334d" stroke-width="4"/><circle cx="43" cy="72" r="3"/><circle cx="58" cy="72" r="3"/><path d="M42 83Q50 77 59 83" fill="none" stroke="#17334d" stroke-width="3"/></svg>`;
+ const color={beetle:'#6c7de1',moth:'#c3a3d9',firefly:'#ffd842',cricket:'#bf9260'}[kind];
+ const wings=kind==='moth'?'<ellipse cx="25" cy="49" rx="23" ry="30" fill="#dcc5ee"/><ellipse cx="75" cy="49" rx="23" ry="30" fill="#dcc5ee"/>':'';
+ return `<svg viewBox="0 0 100 100" role="img" aria-label="${kind} monster"><g stroke="#273d42" stroke-width="4" fill="none"><path d="M32 48L9 32M30 64L5 66M32 79L14 95M68 48L91 32M70 64L95 66M68 79L86 95M40 25L30 6M60 25L70 6"/></g>${wings}<ellipse cx="50" cy="61" rx="26" ry="33" fill="${color}" stroke="#273d42" stroke-width="4"/>${kind==='firefly'?'<ellipse cx="50" cy="82" rx="20" ry="13" fill="#fff794"/>':''}<circle cx="50" cy="32" r="20" fill="${color}" stroke="#273d42" stroke-width="3"/><path d="M36 26L44 30M56 30L64 26" stroke="#273d42" stroke-width="4"/><circle cx="42" cy="35" r="3"/><circle cx="58" cy="35" r="3"/><path d="M43 44Q50 38 57 44" stroke="#273d42" stroke-width="3" fill="none"/></svg>`;
+}
+function bumpFrog(time,sourceX){
+ if(time<hitProtectedUntil)return;
+ travelDuration+=5000;
+ $("travelTimer").textContent=Math.max(0,Math.ceil((travelDuration-(Date.now()-travelStart))/1000))+"s";
+ knockVelocity=(frogX+27<=sourceX?-1:1)*400;frogVY=Math.max(frogVY,210);onGround=false;jumping=true;
+ jumpsUsed=Math.max(1,jumpsUsed);hitProtectedUntil=time+1200;
+ $('travelMessage').textContent='Boing! +5 seconds — keep hopping!';playBump();
+}
+function updateSeed(dt,time){
+ if(!seedShot)return;
+ seedShot.x+=seedShot.vx*dt;seedShot.y+=seedShot.vy*dt;seedShot.life-=dt;
+ if(seedShot.life<=0||seedShot.x<cameraX-40||seedShot.x>cameraX+$('travelScene').clientWidth+40){seedShot=null;$('seedShot').classList.add('hidden');return;}
+ if(seedShot.x+14>frogX+5&&seedShot.x<frogX+50&&seedShot.y+14>frogY&&seedShot.y<frogY+50){bumpFrog(time,seedShot.x+7);seedShot=null;$('seedShot').classList.add('hidden');return;}
+ $('seedShot').classList.remove('hidden');$('seedShot').style.left=(seedShot.x-cameraX)+'px';$('seedShot').style.bottom=(48+seedShot.y)+'px';
+}
+function buildTerrain(){
+ platforms=[];pits=[{x:1100,w:110},{x:2450,w:120}];
+ // Taller ledges are reachable with the double jump.
+ for(let x=320;x<worldLength-400;x+=350+Math.random()*160){
+  if(pits.some(p=>x<p.x+p.w+160&&x+240>p.x-140))continue;
+  const y=[65,105,150,180][platforms.length%4],w=180+Math.random()*70;
+  platforms.push({x,w,y});
+ }
+ $('terrain').innerHTML=platforms.map((p,i)=>`<div class="ledge" id="ledge${i}"></div>`).join('')+pits.map((p,i)=>`<div class="pit" id="pit${i}" aria-label="Pit to jump across"></div>`).join('');
+}
+function renderTerrain(){
+ const width=$('travelScene').clientWidth;
+ cameraX=Math.max(0,Math.min(worldLength-width,frogX-width*.3));
+ $('travelFrog').style.left=(frogX-cameraX)+'px';
+ worldDecorations.forEach((p,i)=>{$('decor'+i).style.left=(p.x-cameraX)+'px';});
+ platforms.forEach((p,i)=>{const e=$('ledge'+i);e.style.left=(p.x-cameraX)+'px';e.style.width=p.w+'px';e.style.bottom=(48+p.y-18)+'px';});
+ pits.forEach((p,i)=>{const e=$('pit'+i);e.style.left=(p.x-cameraX)+'px';e.style.width=p.w+'px';});
+ document.querySelectorAll('#travelScene .cloud').forEach((e,i)=>{e.style.left=(((i?width*.8:width*.15)-cameraX*.2)%(width+140)+width+140)%(width+140)-100+'px';e.style.right='auto';});
+ document.querySelectorAll('#travelScene .hill').forEach((e,i)=>{e.style.left=(((i?width*.7:0)-cameraX*.45)%(width+340)+width+340)%(width+340)-200+'px';e.style.right='auto';});
+ $('travelScene').querySelector('.ground').style.backgroundPosition=(-cameraX)+'px 0';
+ $('travelScene').querySelector('.grass').style.backgroundPosition=(-cameraX)+'px 0';
+ if(monster){$('monster').style.left=(monster.x-cameraX)+'px';$('monster').style.bottom=(48+monster.y)+'px';}
+}
+function spawnMonster(){
+ const width=$('travelScene').clientWidth;
+ const ledge=platforms.find(p=>p.x>frogX+120&&p.x<cameraX+width-60);
+ const useLedge=ledge&&monsterNumber%2===1;
+ let x=useLedge?ledge.x+ledge.w-94:Math.min(worldLength-100,cameraX+width-100);
+ if(!useLedge&&pits.some(p=>x+94>p.x&&x<p.x+p.w))x=frogX+130;
+ monster={x,y:useLedge?ledge.y:0,baseY:useLedge?ledge.y:0,ledge:useLedge?ledge:null,type:WORLD_MONSTERS[currentWorld-1][monsterNumber++%3],squished:false,phase:Math.random()*6};
+ monster.stompsLeft=TOUGH_MONSTERS.includes(monster.type)?2:1;monster.lastStompAt=-1000;
+ $('monster').dataset.tough=String(monster.stompsLeft===2);$('monster').dataset.hits=monster.stompsLeft;
+ monster.nextSeedAt=performance.now()+2200;$('monster').innerHTML=monsterArt(monster.type);$('monster').className='enemy';
+}
+function updateAdventure(dt,time){
+ const previousY=frogY;
+ frogX=Math.max(8,Math.min(worldLength-65,frogX+knockVelocity*dt));
+ knockVelocity*=Math.exp(-7*dt);if(Math.abs(knockVelocity)<2)knockVelocity=0;
+ $("travelFrog").classList.toggle("successful",time<successUntil);$("worldSun").classList.toggle("cheering",time<successUntil);
+ $("travelFrog").classList.toggle("startled",time<hitProtectedUntil);
+ $("travelFrog").style.opacity=time<hitProtectedUntil?(Math.floor(time/90)%2?.45:1):1;
+ frogVY-=1100*dt;frogY+=frogVY*dt;onGround=false;
+ if(frogVY<=0){
+  const landing=platforms.filter(p=>frogX+45>p.x&&frogX+8<p.x+p.w&&previousY>=p.y-.1&&frogY<=p.y).sort((a,b)=>b.y-a.y)[0];
+  if(landing){frogY=landing.y;frogVY=0;onGround=true;}
+  const overPit=pits.some(p=>frogX+28>p.x&&frogX+28<p.x+p.w);
+  if(!landing&&!overPit&&frogY<=0&&previousY>=0){frogY=0;frogVY=0;onGround=true;}
+ }
+ if(onGround)jumpsUsed=0;
+ jumping=!onGround;
+ if(frogY<-180){
+  startTravel(currentWorld);
+  $('travelMessage').textContent='Oops, a pit! Try this world again from the beginning.';
+  return;
+ }
+ $('travelFrog').style.transform=`translateY(${-frogY}px)`;
+ updateSeed(dt,time);
+ if(!monster){if(time>=spawnAt)spawnMonster();renderTerrain();return;}
+ if(monster.squished){renderTerrain();return;}
+ if(!seedShot&&time>=monster.nextSeedAt){
+  const mouthX=monster.x+47,mouthY=monster.y+42,dx=frogX+27-mouthX,dy=frogY+25-mouthY,distance=Math.max(1,Math.hypot(dx,dy));
+  seedShot={x:mouthX,y:mouthY,vx:dx/distance*115,vy:dy/distance*115,life:7};monster.nextSeedAt=time+3000;
+ }
+ const previousTop=monster.y+84;
+ const target=frogX+5;
+ let next=monster.x+Math.sign(target-monster.x)*Math.min(Math.abs(target-monster.x),75*dt);
+ if(monster.ledge){next=Math.max(monster.ledge.x,Math.min(monster.ledge.x+monster.ledge.w-94,next));}
+ else if(pits.some(p=>next+47>p.x&&next+47<p.x+p.w)){next=monster.x;}
+ monster.x=next;monster.y=monster.baseY+Math.abs(Math.sin(time/230+monster.phase))*18;
+ const overlap=frogX+48>monster.x+10&&frogX+7<monster.x+84,top=monster.y+84;
+ if(overlap&&frogVY<0&&previousY>=previousTop-1&&frogY<=top&&time-monster.lastStompAt>300){
+  monster.lastStompAt=time;monster.stompsLeft--;$('monster').dataset.hits=monster.stompsLeft;
+  if(monster.stompsLeft>0){
+   frogY=top;frogVY=350;onGround=false;jumping=true;jumpsUsed=1;
+   $('travelMessage').textContent='Good stomp! One more to squish this tough monster!';tone(420,.12,'triangle',.06);renderTerrain();return;
+  }
+  successUntil=time+1600;$('travelFrog').classList.add('successful');$('worldSun').classList.add('cheering');
+  monster.squished=true;travelDuration=Math.max(Date.now()-travelStart,travelDuration-3000);$('travelTimer').textContent=Math.max(0,Math.ceil((travelDuration-(Date.now()-travelStart))/1000))+'s';seedShot=null;$('seedShot').classList.add('hidden');$('monster').classList.add('squished');stompCount++;
+  $('travelMessage').textContent='SQUISH! ⭐ −3 seconds! '+stompCount+' monsters stomped!';
+  playSquish();frogY=top;frogVY=300;onGround=false;jumping=true;jumpsUsed=1;
+  const defeated=monster;spawnAt=time+1000;
+  setTimeout(()=>{if(monster===defeated){$('monster').classList.add('hidden');monster=null;}},260);
+ }else if(overlap&&frogY<top&&frogY+50>monster.y&&time>=hitProtectedUntil){
+  bumpFrog(time,monster.x+47);
+ }
+ renderTerrain();
+}
+function bossArt(w){
+ const shapes=[ '<polygon points="55,8 12,88 98,88" fill="#ff784e"/>','<rect x="15" y="12" width="80" height="80" rx="5" fill="#a17af7"/>','<circle cx="55" cy="52" r="42" fill="#ffb832"/>','<rect x="7" y="24" width="96" height="65" rx="5" fill="#49bce5"/>'];
+ return `<svg viewBox="0 0 110 130" aria-label="Scowling ${BOSS_NAMES[w-1]}" role="img"><g stroke="#17334d" stroke-width="6" stroke-linecap="round"><path class="arm" d="M20 62 L3 79 L-6 59" fill="none"/><path class="arm right" d="M90 62 L107 79 L116 59" fill="none"/><path class="leg" d="M35 85 L30 118 L17 118" fill="none"/><path class="leg right" d="M75 85 L80 118 L93 118" fill="none"/>${shapes[w-1]}<path d="M29 40 L44 46 M66 46 L81 40"/><path d="M37 53 L37 57 M73 53 L73 57"/><path d="M38 76 Q55 61 72 76" fill="none"/></g></svg>`;
+}
+function laterBattle(fn,delay){const version=screenVersion;battleTimers.push(setTimeout(()=>{if(version===screenVersion&&!$("bossScreen").classList.contains("hidden"))fn();},delay));}
+function lockSpelling(lock){battleBusy=lock;$("spellingInput").disabled=lock;$("submitWord").disabled=lock;$("hearAgain").disabled=lock;}
+function startBoss(w){
+ currentWorld=w;hits=0;currentWordIndex=0;battleMisses=0;replayRequired=false;$("bossSprite").classList.remove("fall");$("bossSprite").style.opacity="1";$("bossSprite").style.display="block";$("bossSprite").className="boss";
+ $("bossWorld").textContent="WORLD "+w+" BOSS";$("bossIntro").textContent=BOSS_NAMES[w-1]+" is in the way!";$("bossSprite").innerHTML=bossArt(w);$("bossHearts").textContent="❤️❤️❤️❤️❤️";$("feedback").textContent="";$("spellingInput").value="";showScreen("bossScreen");
+ const scene=$('travelScene');$('bossScreen').insertBefore(scene,$('bossIntro').nextSibling);
+ scene.appendChild($('battleFrog'));scene.appendChild($('tongue'));scene.appendChild($('bossSprite'));
+ $('battleFrog').innerHTML=$('travelFrog').innerHTML;$('battleFrog').style.display='block';$('battleFrog').style.left='25%';
+ scene.classList.add('bossArena','bossArrival');$('bossSprite').classList.add('arriving');
+ lockSpelling(true);$('spokenWord').textContent='The boss blocks your path!';
+ soundSweep(85,35,.8,'sawtooth',.05);
+ laterBattle(()=>{scene.classList.remove('bossArrival');$('bossSprite').classList.remove('arriving');askCurrentWord();},1600);
+}
+function askCurrentWord(){
+ lockSpelling(false);const list=worldWords(currentWorld);if(currentWordIndex>=5){winWorld();return}
+ $("spokenWord").textContent="Listen carefully…";$("spellingInput").value="";$("feedback").textContent="";renderLetterBlanks();
+ speakWord(list[currentWordIndex]);setTimeout(()=>{$("spellingInput").focus()},350);
+}
+function submitSpelling(){
+ if(battleBusy||$("bossScreen").classList.contains("hidden"))return;
+ const list=worldWords(currentWorld);const target=(list[currentWordIndex]||"").trim();const entered=$("spellingInput").value.trim();
+ if(!entered)return;if("speechSynthesis" in window)speechSynthesis.cancel();lockSpelling(true);
+ if(entered.toLocaleLowerCase()===target.toLocaleLowerCase()){
+  hits++;$("bossHearts").textContent="❤️".repeat(5-hits)+"🖤".repeat(hits);$("feedback").className="feedback success";$("feedback").textContent="THWAP! Great spelling! 🐸👅";
+  $("tongue").classList.add("lash");tone(220,.16,"sawtooth",.05);laterBattle(()=>{$("bossSprite").classList.add("hit");},200);laterBattle(()=>{$("bossSprite").classList.remove("hit");$("tongue").classList.remove("lash");},650);
+  currentWordIndex++;
+  if(hits===5){laterBattle(winWorld,800)}else laterBattle(askCurrentWord,1000);
+ }else{
+  battleMisses++;markChallengingWord((currentWorld<=2?0:5)+currentWordIndex);$("feedback").className="feedback oops";$("feedback").textContent="Look at the spelling, then try again. Replay this world for a perfect battle!";
+  $("spokenWord").textContent=target;
+  laterBattle(()=>{lockSpelling(false);if(!$("bossScreen").classList.contains("hidden")&&currentWordIndex<5){$("spokenWord").textContent="Try spelling it again!";$("spellingInput").value="";renderLetterBlanks();$("spellingInput").focus()}},5000);
+ }
+}
+function winWorld(){
+ if(hits!==5||currentWordIndex!==5)return;
+ $("completionCode").classList.add("hidden");speechSynthesis?.cancel?.();replayRequired=battleMisses>0;
+ $('bossSprite').classList.add('fall');
+ if(replayRequired){
+  // Clear this world's unlock so the map cannot bypass the required replay.
+  saveProgress({completed:getProgress().completed.filter(w=>w<currentWorld)});
+  $('victoryTitle').textContent='TRY THIS WORLD AGAIN!';
+  $('victoryText').textContent='You corrected every word — now aim for a perfect battle!';
+  $('victorySub').textContent='All five words must be right on the first try to unlock the next world.';
+  $('danceFrog').textContent='🐸';$('nextBtn').textContent='↻ REPLAY WORLD '+currentWorld;
+ }else{
+  getProgress().completed.includes(currentWorld)||saveProgress({completed:[...getProgress().completed,currentWorld]});
+  if(currentWorld===4){
+   const session=getDifficultySession(),n=session.missed.length,index=n===0?0:n<=3?1:n<=7?2:3;
+   $('completionCode').textContent='Your secret completion word:';const code=document.createElement('strong');code.textContent=secretCodes[index];$('completionCode').appendChild(code);
+   const instruction=document.createElement('div');instruction.textContent='Write your name and secret word on your completion slip.';$('completionCode').appendChild(instruction);$('completionCode').classList.remove('hidden');
+   session.finished=true;saveDifficultySession(session);saveProgress({completed:[]});
+  }
+  $('victoryTitle').textContent=currentWorld===4?'YOU SAVED SPELLING LAND!':'WORLD '+currentWorld+' CLEAR!';
+  $('victoryText').textContent='Perfect spelling! The boss is defeated!';
+  $('victorySub').textContent='🎉 Five words right on the first try! 🎉';$('danceFrog').textContent='🐸💃';
+  $('nextBtn').textContent=currentWorld===4?'🏆 PLAY AGAIN':'NEXT WORLD ▶';$('battleFrog').classList.add('dance');
+ }
+ laterBattle(()=>showScreen('victory'),1400);
+}
+let audioContext=null,musicEnabled=true,musicInterval=null,musicStep=0;
+function getAudio(){try{audioContext??=new (window.AudioContext||window.webkitAudioContext)();if(audioContext.state==="suspended")audioContext.resume();return audioContext;}catch(e){return null;}}
+function tone(freq,length,type="square",volume=.025){
+ const ctx=getAudio();if(!ctx)return;const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=type;osc.frequency.value=freq;
+ gain.gain.setValueAtTime(volume,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+length);
+ osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+length);
+}
+function soundSweep(from,to,length,type,volume){
+ const ctx=getAudio();if(!ctx)return;const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=type;
+ osc.frequency.setValueAtTime(from,ctx.currentTime);osc.frequency.exponentialRampToValueAtTime(to,ctx.currentTime+length);
+ gain.gain.setValueAtTime(volume,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+length);
+ osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+length);
+}
+function playBump(){soundSweep(220,680,.16,'sine',.065);soundSweep(540,190,.28,'triangle',.045);}
+function playSquish(){soundSweep(380,65,.18,'sawtooth',.05);tone(950,.065,'sine',.04);}
+function startMusic(){
+ getAudio();if(musicInterval)return;
+ const melody=[72,76,79,76,74,77,81,77,76,79,84,79,74,77,79,0,72,76,79,84,81,77,74,77,79,76,72,76,74,71,72,0];
+ musicInterval=setInterval(()=>{if(!musicEnabled||document.hidden)return;
+ if(!$("bossScreen").classList.contains("hidden"))return;
+ const note=melody[musicStep%melody.length];if(note)tone(440*2**((note-69)/12),.16,"square",.018);
+ if(musicStep%2===0)tone(440*2**(([48,53,55,48][Math.floor(musicStep/8)%4]-69)/12),.25,"triangle",.04);
+ musicStep++;
+ },180);
+}
+$("musicToggle").onclick=()=>{musicEnabled=!musicEnabled;$("musicToggle").textContent=musicEnabled?"♫ MUSIC ON":"♫ MUSIC OFF";$("musicToggle").setAttribute("aria-pressed",String(musicEnabled));if(musicEnabled)startMusic();};
+$("playBtn").onclick=()=>{startMusic();renderWorlds();showScreen("worldSelect")};
+$("homeBtn").onclick=()=>showScreen("home");
+$("resetProgress").onclick=()=>{if(confirm("Reset completed worlds on this computer?")){saveProgress({completed:[]});localStorage.removeItem("frogDifficultySession");alert("Progress reset.");}};
+function clearMovementKeys(){movementKeys.clear();}
+function editingText(target){return target instanceof Element && !!target.closest('input, textarea, select, [contenteditable="true"]');}
+window.addEventListener("keydown",e=>{
+ if($("travel").classList.contains("hidden") || editingText(e.target))return;
+ if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Space"].includes(e.code))return;
+ e.preventDefault();
+ if(e.code==="ArrowLeft" || e.code==="ArrowRight")movementKeys.add(e.code);
+ if((e.code==="Space" || e.code==="ArrowUp") && !e.repeat)jump();
+});
+window.addEventListener("keyup",e=>{movementKeys.delete(e.code);});
+window.addEventListener("blur",clearMovementKeys);
+document.addEventListener("visibilitychange",clearMovementKeys);
+function movementFrame(time){
+ const seconds=lastMovementFrame===null?0:Math.min((time-lastMovementFrame)/1000,.05);
+ lastMovementFrame=time;
+ if(!$("travel").classList.contains("hidden")){
+  const direction=Number(movementKeys.has("ArrowRight"))-Number(movementKeys.has("ArrowLeft"));
+  frogX=Math.max(8,Math.min(worldLength-65,frogX+direction*190*seconds));
+  updateAdventure(seconds,time);
+ }
+ requestAnimationFrame(movementFrame);
+}
+requestAnimationFrame(movementFrame);
+$("jumpBtn").onclick=jump;$("quitTravel").onclick=()=>{clearInterval(travelInterval);renderWorlds();showScreen("worldSelect")};
+$("spellingInput").addEventListener("input",renderLetterBlanks);$("letterBlanks").onclick=()=>$("spellingInput").focus();
+$("submitWord").onclick=submitSpelling;$("spellingInput").addEventListener("keydown",e=>{if(e.key==="Enter")submitSpelling()});$("hearAgain").onclick=()=>speakWord(worldWords(currentWorld)[currentWordIndex]);
+$("leaveBoss").onclick=()=>{speechSynthesis?.cancel?.();renderWorlds();showScreen("worldSelect")};
+$("nextBtn").onclick=()=>{if(replayRequired){startTravel(currentWorld);return;}if(currentWorld===4){saveProgress({completed:[]});renderWorlds();showScreen("worldSelect")}else{renderWorlds();startTravel(currentWorld+1)}};
+$("mapAfterWin").onclick=()=>{renderWorlds();showScreen("worldSelect")};
+if("speechSynthesis"in window){speechSynthesis.onvoiceschanged=()=>{}}
+loadSharedWords();
+</script>
+</body>
+</html>
