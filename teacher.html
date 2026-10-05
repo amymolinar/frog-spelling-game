@@ -22,12 +22,24 @@ let selectedClassId='main',classList=[];
 let currentPassword='',words=[],secretCodes=[];
 const CODE_RANGES=['0 challenging words','1–3 challenging words','4–7 challenging words','8–10 challenging words'];
 async function cloudRequest(action,data={}){
- if(!CLOUD_URL) throw new Error("Cloud URL is not configured yet.");
- const params=new URLSearchParams({action,classId:selectedClassId,teacherName:teacherUsername,...Object.fromEntries(Object.entries(data).map(([k,v])=>[k,typeof v==="string"?v:JSON.stringify(v)]))});
- const response=await fetch(CLOUD_URL+(CLOUD_URL.includes("?")?"&":"?")+params.toString(),{method:"GET",cache:"no-store"});
- if(!response.ok)throw new Error("Cloud request failed ("+response.status+").");
- const result=await response.json();if(!result.ok)throw new Error(result.error||"Cloud service error.");return result;
+ if(!CLOUD_URL)throw Error('Cloud URL is not configured yet.');
+ const readOnly=['studentSetup','dashboardData','getClasses','getWords','getWeek','getHistory','getReport','login'].includes(action);
+ const params=new URLSearchParams({action,classId:selectedClassId,teacherName:teacherUsername,...Object.fromEntries(Object.entries(data).map(([k,v])=>[k,typeof v==='string'?v:JSON.stringify(v)]))});
+ for(let attempt=0;attempt<(readOnly?3:1);attempt++){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
+  try{
+   const response=await fetch(CLOUD_URL+(CLOUD_URL.includes('?')?'&':'?')+params.toString(),{method:'GET',cache:'no-store',signal:controller.signal});
+   if(!response.ok){const error=Error('Shared connection returned HTTP '+response.status+'.');error.retryable=[404,408,429,500,502,503,504].includes(response.status);throw error;}
+   let result;try{result=await response.json();}catch(e){const error=Error('The shared service did not return game data.');error.retryable=true;throw error;}
+   if(!result.ok)throw Error(result.error||'Cloud service error.');return result;
+  }catch(e){
+   const network=e.name==='AbortError'||e instanceof TypeError||e.retryable;
+   if(!readOnly||!network||attempt===2)throw Error(e.name==='AbortError'?'The shared connection timed out. Please try again.':e.message);
+  }finally{clearTimeout(timer);}
+  await new Promise(resolve=>setTimeout(resolve,700*(attempt+1)));
+ }
 }
+
 function buildWordInputs(){
  const codeHost=$('codeInputs');codeHost.innerHTML='';secretCodes.forEach((code,i)=>{const label=document.createElement('label');label.textContent=CODE_RANGES[i];const input=document.createElement('input');input.id='secretCode'+i;input.value=code;input.maxLength=30;label.appendChild(input);codeHost.appendChild(label);});
  const host=$("wordInputs");host.innerHTML="";
@@ -38,13 +50,13 @@ async function teacherLogin(){
  $('teacherLogin').disabled=true;$('loginMessage').textContent='Signing in…';
  try{
   if(!CLOUD_URL)throw Error('Connect this dashboard first: paste your Apps Script Web App URL into CLOUD_URL.');
-  teacherUsername=$('teacherUsername').value.trim().toLowerCase();const password=$('teacherPassword').value,r=await cloudRequest('login',{password});if(!r.authenticated)throw Error('That password did not match.');
-  const classes=await cloudRequest('getClasses',{password});classList=classes.classes;selectedClassId=classList[0]?.id||'';renderClassChoices();
+  teacherUsername=$('teacherUsername').value.trim().toLowerCase();const password=$('teacherPassword').value;
+  const data=await cloudRequest('dashboardData',{password,classId:localStorage.getItem('frogTeacherClass:'+teacherUsername)||selectedClassId});classList=data.classes;selectedClassId=data.classId;renderClassChoices();
   if(!classList.length){currentPassword=password;$('teacherAccounts').classList.toggle('hidden',!['admin','molinar'].includes(teacherUsername));$('teacherPassword').value='';$('loginMessage').textContent='';$('loginArea').classList.add('hidden');$('teacherEditor').classList.remove('hidden');emptyClassView();return;}
   setClassControls(false);
-  const data=await cloudRequest('getWords');if(!Array.isArray(data.words)||data.words.length!==10)throw Error('The shared spelling list could not load.');
+  if(!Array.isArray(data.words)||data.words.length!==10)throw Error('The shared spelling list could not load.');
   if(!Array.isArray(data.codes)||data.codes.length!==4)throw Error('Update Code.gs to the version that supports secret codes, then redeploy it.');
-  currentPassword=password;$('teacherAccounts').classList.toggle('hidden',!['admin','molinar'].includes(teacherUsername));words=data.words;secretCodes=data.codes;buildWordInputs();$('teacherPassword').value='';$('loginMessage').textContent='';$('teacherMessage').textContent='';$('loginArea').classList.add('hidden');$('teacherEditor').classList.remove('hidden');await refreshReport(true);
+  currentPassword=password;$('teacherAccounts').classList.toggle('hidden',!['admin','molinar'].includes(teacherUsername));words=data.words;secretCodes=data.codes;buildWordInputs();$('teacherPassword').value='';$('loginMessage').textContent='';$('teacherMessage').textContent='';$('loginArea').classList.add('hidden');$('teacherEditor').classList.remove('hidden');$('rosterNames').value=data.roster.join('\n');localStorage.setItem('frogTeacherClass:'+teacherUsername,selectedClassId);refreshReport(false);
  }catch(e){$('loginMessage').textContent=e.message;}finally{$('teacherLogin').disabled=false;}
 }
 async function saveWordList(){
@@ -69,7 +81,7 @@ function renderClassChoices(){
 }
 async function switchClass(){
  $('weekControls').classList.remove('hidden');$('historyResults').innerHTML='';$('studentHistory').innerHTML='';$('historyPanel').classList.add('hidden');$('classReport').classList.remove('hidden');selectedClassId=$('teacherClass').value;clearInterval(reportPoll);reportPoll=null;if(!selectedClassId){emptyClassView();return;}setClassControls(false);
- try{const r=await cloudRequest('getWords');words=r.words;secretCodes=r.codes;buildWordInputs();$('teacherMessage').textContent='';await refreshReport(true);}catch(e){$('teacherMessage').textContent=e.message;}
+ try{const r=await cloudRequest('getWords');words=r.words;secretCodes=r.codes;buildWordInputs();$('rosterNames').value=r.roster.join('\n');localStorage.setItem('frogTeacherClass:'+teacherUsername,selectedClassId);$('teacherMessage').textContent='';refreshReport(false);}catch(e){$('teacherMessage').textContent=e.message;}
 }
 async function createClass(){
  $('createClass').disabled=true;
@@ -91,10 +103,10 @@ async function addTeacher(){
 }
 $('addTeacher').onclick=addTeacher;
 $('teacherClass').onchange=switchClass;$('createClass').onclick=createClass;
-let reportPoll=null;
+let reportPoll=null,reportLoading=false;
 function weekDays(date){const d=new Date(date+'T12:00:00Z');const day=d.getUTCDay();d.setUTCDate(d.getUTCDate()-(day===0?6:day-1));return Array.from({length:5},(_,i)=>{const n=new Date(d);n.setUTCDate(d.getUTCDate()+i);return n.toISOString().slice(0,10);});}
 async function refreshReport(loadRoster=false){
- if(!currentPassword||!selectedClassId)return;const classId=selectedClassId;
+ if(!currentPassword||!selectedClassId||reportLoading)return;reportLoading=true;const classId=selectedClassId;
  try{
   const days=weekDays($('weekDate').value||easternToday());$('weekDate').value=days[0];
   const r=await cloudRequest('getWeek',{password:currentPassword,start:days[0],end:days[4]});if(!currentPassword||selectedClassId!==classId)return;
@@ -105,12 +117,12 @@ async function refreshReport(loadRoster=false){
    const row=document.createElement('tr'),student=document.createElement('th');student.scope='row';const button=document.createElement('button');button.className='studentLink';button.textContent=name;button.onclick=()=>showStudentHistory(name);student.appendChild(button);row.appendChild(student);
    days.forEach(date=>{const record=r.history.find(h=>h.date===date&&h.name.toLowerCase()===name.toLowerCase()),cell=document.createElement('td'),dot=document.createElement('span');dot.className='dot '+(record?historyColor(record.misses):'gray');const label=date+': '+(record?record.misses+' challenging words':'No completed game');dot.title=label;dot.setAttribute('role','img');dot.setAttribute('aria-label',label);cell.appendChild(dot);row.appendChild(cell);});body.appendChild(row);
   });table.appendChild(body);$('classReport').appendChild(table);$('reportMessage').textContent=r.names.length?'Weekly report updated. Click a name for missed words.':'Add your class names below.';
-  if(!reportPoll)reportPoll=setInterval(()=>{if(!document.hidden&&currentPassword)refreshReport(false);},15000);
- }catch(e){$('reportMessage').textContent='Could not load report: '+e.message;}
+  if(!reportPoll)reportPoll=setInterval(()=>{if(!document.hidden&&currentPassword)refreshReport(false);},30000);
+ }catch(e){$('reportMessage').textContent='Your settings are loaded. The report could not load: '+e.message;}finally{reportLoading=false;}
 }
 async function saveRoster(){
  const names=$('rosterNames').value.split(/\r?\n/).map(n=>n.trim()).filter(Boolean);$('saveRoster').disabled=true;
- try{await cloudRequest('saveRoster',{password:currentPassword,names:JSON.stringify(names)});await refreshReport(true);$('reportMessage').textContent='Class names saved. Refresh student games before playing.';}
+ try{const saved=await cloudRequest('saveRoster',{password:currentPassword,names:JSON.stringify(names)});$('rosterNames').value=saved.names.join('\n');refreshReport(false);$('reportMessage').textContent='Class names saved. Refresh student games before playing.';}
  catch(e){$('reportMessage').textContent=e.message;}finally{$('saveRoster').disabled=false;}
 }
 async function resetReport(){

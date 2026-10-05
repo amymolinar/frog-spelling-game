@@ -98,7 +98,7 @@ footer{text-align:center;font-size:12px;padding:15px}
       <div class="pixelTitle">FROG'S<br>SPELLING<br>ADVENTURE!</div>
       <div class="frog">🐸</div>
       <div class="subtitle">Hop, stomp, spell, and save the day!</div>
-      <label for="studentClass" style="margin-top:12px;font-weight:bold">Your class</label><select id="studentClass" style="font-size:21px;padding:9px;border:3px solid #17334d;border-radius:12px;width:240px"></select><label for="studentName" style="margin-top:12px;font-weight:bold">Your first name</label><input id="studentName" list="classNames" autocomplete="off" maxlength="40" style="font-size:24px;padding:10px;border:3px solid #17334d;border-radius:12px;width:240px;text-align:center"><datalist id="classNames"></datalist><div id="nameMessage" role="status" class="note"></div><button class="big" id="playBtn">▶ PLAY</button>
+      <label for="studentClass" style="margin-top:12px;font-weight:bold">Your class</label><select id="studentClass" style="font-size:21px;padding:9px;border:3px solid #17334d;border-radius:12px;width:240px"></select><label for="studentName" style="margin-top:12px;font-weight:bold">Your first name</label><input id="studentName" list="classNames" autocomplete="off" maxlength="40" style="font-size:24px;padding:10px;border:3px solid #17334d;border-radius:12px;width:240px;text-align:center"><datalist id="classNames"></datalist><button id="retrySetup" class="small hidden">TRY LOADING AGAIN</button><div id="nameMessage" role="status" class="note"></div><button class="big" id="playBtn">▶ PLAY</button>
       <button id="resetProgress" class="small">RESET PLAYER PROGRESS</button>
     </div>
   </section>
@@ -155,7 +155,7 @@ const WORLD_NAMES = ["Sunny Meadow","Butterfly Garden","Mushroom Meadow","Sunset
 const BOSS_NAMES = ["Triangle Boss","Square Boss","Circle Boss","Rectangle Boss"];
 const BOSS_EMOJI = ["🔺","🟦","⭕","▭"];
 let frogX=12,jumping=false,jumpTimeout=null,frogY=0,frogVY=0,monster=null,spawnAt=0,monsterNumber=0,stompCount=0;
-let selectedClassId='main';
+let selectedClassId=localStorage.getItem('frogStudentClass')||'main';
 let playerSession=null,activityId='preview',sharedReady=false,classRoster=[];
 function playerStorageKey(key){return key+':'+(playerSession?playerSession.classId+':'+playerSession.name.toLowerCase()+':'+playerSession.activityId+':'+playerSession.sessionId:'preview');}
 let secretCodes=["fish","hat","dog","bug"];
@@ -192,21 +192,33 @@ function renderWorlds(){
  }
 }
 async function cloudRequest(action,data={}){
- if(!CLOUD_URL) throw new Error("Cloud URL is not configured yet.");
- const params=new URLSearchParams({action,classId:selectedClassId,...Object.fromEntries(Object.entries(data).map(([k,v])=>[k,typeof v==="string"?v:JSON.stringify(v)]))});
- const response=await fetch(CLOUD_URL+(CLOUD_URL.includes("?")?"&":"?")+params.toString(),{method:"GET",cache:"no-store"});
- if(!response.ok)throw new Error("Cloud request failed ("+response.status+").");
- const result=await response.json();if(!result.ok)throw new Error(result.error||"Cloud service error.");return result;
+ if(!CLOUD_URL)throw Error('Cloud URL is not configured yet.');
+ const readOnly=['studentSetup','dashboardData','getClasses','getWords','getWeek','getHistory','getReport','login'].includes(action);
+ const params=new URLSearchParams({action,classId:selectedClassId,...Object.fromEntries(Object.entries(data).map(([k,v])=>[k,typeof v==='string'?v:JSON.stringify(v)]))});
+ for(let attempt=0;attempt<(readOnly?3:1);attempt++){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
+  try{
+   const response=await fetch(CLOUD_URL+(CLOUD_URL.includes('?')?'&':'?')+params.toString(),{method:'GET',cache:'no-store',signal:controller.signal});
+   if(!response.ok){const error=Error('Shared connection returned HTTP '+response.status+'.');error.retryable=[404,408,429,500,502,503,504].includes(response.status);throw error;}
+   let result;try{result=await response.json();}catch(e){const error=Error('The shared service did not return game data.');error.retryable=true;throw error;}
+   if(!result.ok)throw Error(result.error||'Cloud service error.');return result;
+  }catch(e){
+   const network=e.name==='AbortError'||e instanceof TypeError||e.retryable;
+   if(!readOnly||!network||attempt===2)throw Error(e.name==='AbortError'?'The shared connection timed out. Please try again.':e.message);
+  }finally{clearTimeout(timer);}
+  await new Promise(resolve=>setTimeout(resolve,700*(attempt+1)));
+ }
 }
-async function loadSharedWords(){
- $('playBtn').disabled=true;$('nameMessage').textContent='Loading your class…';
+
+async function loadSharedWords(setup=null){
+ sharedReady=false;$('playBtn').disabled=true;$('retrySetup').classList.add('hidden');$('nameMessage').textContent='Connecting to your class…';
  try{
-  const r=await cloudRequest('getWords');if(!Array.isArray(r.roster))throw Error('Your teacher needs to update the shared game script.');
+  const r=setup||await cloudRequest('getWords');if(!Array.isArray(r.roster))throw Error('Your teacher needs to update the shared game script.');
   words=r.words;secretCodes=r.codes;activityId=r.activityId;classRoster=r.roster;$('classNames').innerHTML='';
   classRoster.forEach(name=>{const option=document.createElement('option');option.value=name;$('classNames').appendChild(option);});
-  sharedReady=true;$('nameMessage').textContent=classRoster.length?'Type your name, then press PLAY.':'Your teacher needs to add the class names first.';
+  localStorage.setItem('frogStudentClass',selectedClassId);sharedReady=true;$('nameMessage').textContent=classRoster.length?'Type your name, then press PLAY.':'Your teacher needs to add the class names first.';
   if(localStorage.getItem('frogPendingReport'))sendCompletionReport();
- }catch(e){$('nameMessage').textContent='Could not load the class: '+e.message;}finally{$('playBtn').disabled=!sharedReady;}
+ }catch(e){$('nameMessage').textContent='Could not connect to your class: '+e.message;$('retrySetup').classList.remove('hidden');}finally{$('playBtn').disabled=!sharedReady;}
 }
 async function beginStudentGame(){
  if(!sharedReady)return;
@@ -509,11 +521,12 @@ $("nextBtn").onclick=()=>{if(replayRequired){startTravel(currentWorld);return;}i
 $("mapAfterWin").onclick=()=>{if(currentWorld===4&&!replayRequired){playerSession=null;showScreen("home");}else{renderWorlds();showScreen("worldSelect")}};
 if("speechSynthesis"in window){speechSynthesis.onvoiceschanged=()=>{}}
 async function loadClasses(){
- $('playBtn').disabled=true;
- try{const r=await cloudRequest('getClasses');$('studentClass').innerHTML='';r.classes.forEach(c=>{const option=document.createElement('option');option.value=c.id;option.textContent=c.name;$('studentClass').appendChild(option);});if(!r.classes.length){$('nameMessage').textContent='Your teacher needs to add a class first.';return;}selectedClassId=r.classes[0].id;await loadSharedWords();}
- catch(e){$('nameMessage').textContent='Could not load classes. Your teacher may need to update the shared script.';}
+ sharedReady=false;$('playBtn').disabled=true;$('retrySetup').classList.add('hidden');$('nameMessage').textContent='Connecting to your class…';
+ try{const r=await cloudRequest('studentSetup');$('studentClass').innerHTML='';r.classes.forEach(c=>{const option=document.createElement('option');option.value=c.id;option.textContent=c.name;$('studentClass').appendChild(option);});if(!r.classes.length){$('nameMessage').textContent='Your teacher needs to add a class first.';return;}selectedClassId=r.classId;await loadSharedWords(r);}
+ catch(e){$('nameMessage').textContent='Could not connect: '+e.message+' Use TRY LOADING AGAIN.';$('retrySetup').classList.remove('hidden');}
 }
 $('studentClass').onchange=()=>{selectedClassId=$('studentClass').value;playerSession=null;$('studentName').value='';sharedReady=false;loadSharedWords();};
+$('retrySetup').onclick=loadClasses;
 loadClasses();
 </script>
 </body>
