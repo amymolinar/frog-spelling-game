@@ -350,6 +350,11 @@ function updateAdventure(dt,time){
  }
  $('travelFrog').style.transform=`translateY(${-frogY}px)`;
  updateSeed(dt,time);
+ const viewWidth=$('travelScene').clientWidth;
+ const viewLeft=Math.max(0,Math.min(worldLength-viewWidth,frogX-viewWidth*.3));
+ if(monster&&!monster.squished&&(monster.x+94<viewLeft||monster.x>viewLeft+viewWidth)){
+  monster=null;seedShot=null;$('monster').classList.add('hidden');$('seedShot').classList.add('hidden');spawnAt=time+1000;
+ }
  if(!monster){if(time>=spawnAt)spawnMonster();renderTerrain();return;}
  if(monster.squished){renderTerrain();return;}
  if(!seedShot&&time>=monster.nextSeedAt){
