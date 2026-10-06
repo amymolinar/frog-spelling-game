@@ -1,3 +1,13 @@
+Let’s do it slowly, Amy. 💚
+
+1. Open a **new, blank Notepad window**.
+2. Click **Copy** on the code box below.
+3. Paste it into Notepad.
+
+This is **Part 1—the beginning of the file**. It won’t run until we’ve added the remaining parts. Leave Notepad open, and tell me **“pasted.”**
+
+```html
+<!-- VERIFIED SMASH BAR EDITION: smashScore, ten sections, compact boss battle -->
 <!doctype html>
 <html lang="en">
 <head>
@@ -22,7 +32,7 @@ h1,h2,h3{margin:5px 0 12px} .center{text-align:center}.hidden{display:none!impor
 .frog{font-size:74px;filter:drop-shadow(3px 4px 0 #17334d);animation:bob 1.2s infinite ease-in-out}@keyframes bob{50%{transform:translateY(-8px)}} .subtitle{font-size:19px;font-weight:800;text-shadow:1px 1px white}
 .big{font-size:23px;padding:14px 28px;background:#ffdc44;margin:8px}.small{font-size:13px;padding:7px 10px}
 .gameTop{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-.progress{height:20px;border:3px solid var(--ink);border-radius:20px;background:#fff;overflow:hidden;flex:1;min-width:130px}.progress span{display:block;height:100%;background:#59d66d;width:0%;transition:width .2s}
+.progress{height:26px;border:3px solid var(--ink);border-radius:9px;background:#fff;overflow:hidden;flex:1;min-width:150px;display:grid;grid-template-columns:repeat(10,1fr);gap:3px;padding:3px}.progress span{display:block;height:100%;background:#e4e9e2;border-radius:2px;transition:background .2s}.progress span.filled{background:#59d66d}
 .scene{position:relative;height:300px;overflow:hidden;border:4px solid var(--ink);border-radius:15px;background:linear-gradient(#68d5ff 0 66%,#b8ed7b 66%);image-rendering:pixelated}
 .scene .ground{height:52px}.scene .grass{bottom:41px;height:11px}.scene .hill{bottom:42px}.actor{position:absolute;bottom:48px;left:12%;font-size:47px;z-index:3;transition:left .5s}.enemy{position:absolute;bottom:48px;font-size:34px;z-index:2;animation:floaty 2.2s ease-in-out infinite alternate}.e1{left:36%}.e2{left:54%;animation-delay:.4s}.e3{left:72%;animation-delay:.9s}@keyframes floaty{to{transform:translateY(-25px)}} .seed{position:absolute;left:75%;bottom:110px;font-size:20px;animation:seed 2s infinite}@keyframes seed{0%{transform:translate(0,0)}100%{transform:translate(-100px,90px);opacity:.2}}
 .block{position:absolute;top:35%;left:44%;background:#ffb63d;border:4px solid #9b4c23;border-radius:6px;padding:7px;font-size:23px;font-weight:1000}
@@ -86,7 +96,29 @@ footer{text-align:center;font-size:12px;padding:15px}
 .worldSun{width:65px;height:65px}.worldSun svg{width:100%;height:100%;overflow:visible}.sunSmile{display:none}.worldSun.cheering .sunSmile{display:block}.worldSun.cheering .sunNeutral{display:none}
 #monster[data-tough="true"]:after{content:attr(data-hits) " stomps";position:absolute;left:7px;top:-19px;font:bold 12px Arial;background:#fff5b4;border:2px solid #17334d;border-radius:8px;padding:3px;white-space:nowrap}
 .letterBlanks{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin-top:12px}.letterSlot{width:32px;height:42px;border-bottom:4px solid #17334d;font:bold 28px monospace;text-align:center}.letterSlot.extra{color:#b31d4b;border-color:#b31d4b}#completionCode{background:#fff7ad;border:3px dashed #17334d;border-radius:14px;padding:14px;margin:12px;font-size:22px}#completionCode strong{display:block;font-size:38px}
+
+body.bossMode .wrap{max-width:1100px;padding:8px}body.bossMode .brand{font-size:22px}body.bossMode footer{display:none}
+#bossScreen{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:10px 18px;padding:14px}
+#bossScreen>.gameTop,#bossScreen>#bossIntro{grid-column:1/-1;margin:0}#bossScreen>#bossIntro{font-size:22px}
+#bossScreen>#travelScene{grid-column:1;grid-row:3;height:clamp(190px,42dvh,280px);min-width:0}
+#bossScreen>.bossArea{grid-column:1;grid-row:4;min-height:0;gap:0}#bossScreen .battleStage{display:none}
+#bossSpelling{grid-column:2;grid-row:3/5;align-self:center;min-width:0}#bossSpelling>p{margin:0 0 8px}#bossScreen .wordPrompt{font-size:25px;padding:8px 10px;min-width:0;max-width:100%}
+#bossScreen .letterBlanks{gap:4px;margin-top:8px}#bossScreen .letterSlot{width:25px;height:33px;font-size:24px}
+#bossScreen .answerRow{margin:9px 0;flex-wrap:nowrap}#bossScreen .answerRow input{width:100%;min-width:0;padding:8px;font-size:24px}#bossScreen #submitWord{padding:8px;white-space:nowrap;font-size:15px}
+#bossScreen .feedback{font-size:16px;min-height:38px}#bossScreen #hearAgain{margin-top:4px}
+@media(max-width:700px){
+ #bossScreen{grid-template-columns:minmax(0,1fr);gap:7px;padding:10px}#bossScreen>#travelScene{grid-column:1;grid-row:3;height:clamp(160px,30dvh,215px)}#bossScreen>.bossArea{grid-column:1;grid-row:4}#bossSpelling{grid-column:1;grid-row:5}#bossScreen>#bossIntro{font-size:18px}#bossScreen .hearts{font-size:20px}#bossScreen .bossArea .note{display:none}#bossScreen .wordPrompt{font-size:21px;padding:5px 8px}#bossSpelling>p{display:none}#bossScreen .feedback{min-height:25px;font-size:15px}#bossScreen .answerRow{max-width:480px;margin:7px auto}body.bossMode .brand{font-size:18px}
+}
+
 </style>
+```
+Here is **Part 2**, Amy. 💚
+
+In the same Notepad window, press **Ctrl + End**, then **Enter**. Copy this code and paste it there, underneath Part 1.
+
+Tell me **“pasted”** when done.
+
+```html
 </head>
 <body>
 <div class="wrap">
@@ -111,7 +143,7 @@ footer{text-align:center;font-size:12px;padding:15px}
   </section>
 
   <section id="travel" class="panel hidden">
-    <div class="gameTop"><strong id="worldTitle">WORLD 1</strong><div class="progress"><span id="travelProgress"></span></div><strong id="travelTimer">60s</strong><button class="small" id="quitTravel">QUIT</button></div>
+    <div class="gameTop"><strong id="worldTitle">WORLD 1</strong><div class="progress" id="travelProgress" role="progressbar" aria-label="Monster smash progress" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0"><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span></div><strong id="smashScore">0 / 10</strong><button class="small" id="quitTravel">QUIT</button></div>
     <div class="scene" id="travelScene">
       <div class="cloud c1"></div><div class="cloud c2"></div><div class="hill h1"></div><div class="hill h2"></div><div class="grass"></div><div class="ground"></div>
       <div class="sceneCaption" id="sceneCaption">Sunny Meadow</div>
@@ -126,7 +158,7 @@ footer{text-align:center;font-size:12px;padding:15px}
     <div class="gameTop"><strong id="bossWorld">WORLD 1 BOSS</strong><button class="small" id="leaveBoss">WORLD MAP</button></div>
     <h2 class="center" id="bossIntro">A shape boss blocks the way!</h2>
     <div class="bossArea"><div class="battleStage"><div id="battleFrog">🐸</div><div id="tongue"></div><div class="boss" id="bossSprite"></div></div><div><div class="hearts" id="bossHearts">❤️❤️❤️❤️❤️</div><div class="note center">Five words. Five tongue slaps!</div></div></div>
-    <div class="center">
+    <div class="center" id="bossSpelling">
       <p><strong>Listen carefully, then spell the word.</strong></p>
       <div id="spokenWord" class="wordPrompt">Ready?</div>
       <div id="letterBlanks" class="letterBlanks" aria-hidden="true"></div><div class="answerRow"><input id="spellingInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type the spelling word" placeholder="Type the word here"><button id="submitWord">SPELL IT!</button></div>
@@ -140,10 +172,15 @@ footer{text-align:center;font-size:12px;padding:15px}
     <div class="heroContent"><h1 id="victoryTitle" class="pixelTitle">WORLD CLEAR!</h1><div class="frog" id="danceFrog">🐸💃</div><h2 id="victoryText">You did it!</h2><p id="victorySub" class="subtitle">Great spelling!</p><div id="reportStatus" role="status" class="note"></div><button id="retryReport" class="small hidden">RETRY SENDING REPORT</button><div id="completionCode" class="hidden" role="status"></div><button class="big" id="nextBtn">NEXT WORLD ▶</button><button id="mapAfterWin">WORLD MAP</button></div>
   </section>
 
-
   <footer>Made for brave spellers. Original retro-inspired characters and artwork.</footer>
 </div>
 <script>
+```
+Here is **Part 3**, Amy. 💚
+
+Press **Ctrl + End**, then **Enter** in Notepad. Copy this code and paste it underneath Part 2. Tell me **“pasted”** when done.
+
+```javascript
 /*
   CONFIGURATION:
   After deploying the included Google Apps Script, paste its Web App URL below.
@@ -155,6 +192,7 @@ const WORLD_NAMES = ["Sunny Meadow","Butterfly Garden","Mushroom Meadow","Sunset
 const BOSS_NAMES = ["Triangle Boss","Square Boss","Circle Boss","Rectangle Boss"];
 const BOSS_EMOJI = ["🔺","🟦","⭕","▭"];
 let frogX=12,jumping=false,jumpTimeout=null,frogY=0,frogVY=0,monster=null,spawnAt=0,monsterNumber=0,stompCount=0;
+let smashProgress=0,bossArrivalPending=false;
 let selectedClassId=localStorage.getItem('frogStudentClass')||'main';
 let playerSession=null,activityId='preview',sharedReady=false,classRoster=[];
 function playerStorageKey(key){return key+':'+(playerSession?playerSession.classId+':'+playerSession.name.toLowerCase()+':'+playerSession.activityId+':'+playerSession.sessionId:'preview');}
@@ -174,10 +212,10 @@ let battleMisses=0,replayRequired=false;
 let battleBusy=false,battleTimers=[],screenVersion=0;
 const movementKeys = new Set();
 let lastMovementFrame = null;
-let words = [...DEFAULT_WORDS], currentWorld = 1, currentWordIndex = 0, hits = 0, travelInterval = null, travelStart = 0, travelDuration = 60000, travelJumpCount = 0;
+let words = [...DEFAULT_WORDS], currentWorld = 1, currentWordIndex = 0, hits = 0, travelJumpCount = 0;
 const $ = id => document.getElementById(id);
 const screens = ["home","worldSelect","travel","bossScreen","victory"];
-function showScreen(id){ screenVersion++;battleTimers.forEach(clearTimeout);battleTimers=[];battleBusy=false;clearMovementKeys();clearInterval(travelInterval);if(id!=="travel"){seedShot=null;$("seedShot").classList.add("hidden");monster=null;$("monster").classList.add("hidden");}$("tongue").classList.remove("lash");$("battleFrog").classList.remove("dance"); screens.forEach(s=>$(s).classList.toggle("hidden",s!==id)); }
+function showScreen(id){ document.body.classList.toggle("bossMode",id==="bossScreen");screenVersion++;battleTimers.forEach(clearTimeout);battleTimers=[];battleBusy=false;clearMovementKeys();if(id!=="travel"){seedShot=null;$("seedShot").classList.add("hidden");monster=null;$("monster").classList.add("hidden");}$("tongue").classList.remove("lash");$("battleFrog").classList.remove("dance"); screens.forEach(s=>$(s).classList.toggle("hidden",s!==id)); }
 function getProgress(){try{return JSON.parse(localStorage.getItem(playerStorageKey("frogSpellProgress"))||'{"completed":[]}')}catch(e){return {completed:[]}}}
 function saveProgress(p){localStorage.setItem(playerStorageKey("frogSpellProgress"),JSON.stringify(p))}
 function worldWords(w){return w<=2?words.slice(0,5):words.slice(5,10)}
@@ -256,12 +294,22 @@ function startTravel(w){
  scene.classList.remove('bossArena','bossArrival');
  $('bossSprite').style.display='none';$('battleFrog').style.display='none';
  const difficulty=getDifficultySession();if(difficulty.finished)saveDifficultySession({wordKey:JSON.stringify(words),missed:[],finished:false});
- currentWorld=w;travelDuration=60000;successUntil=0;$("travelFrog").classList.remove("successful");showScreen("travel");applyWorldTheme(w);$("worldTitle").textContent="WORLD "+w+" — "+WORLD_NAMES[w-1];$("sceneCaption").textContent=WORLD_NAMES[w-1];$("travelProgress").style.width="0%";$("travelTimer").textContent="60s";$("travelMessage").textContent="Use ← → to move. Press SPACE twice for a double jump!";travelJumpCount=0;frogX=12;jumping=false;clearTimeout(jumpTimeout);$("travelFrog").style.left="12%";$("travelFrog").style.transform="translateY(0)";
+ currentWorld=w;smashProgress=0;bossArrivalPending=false;successUntil=0;$("travelFrog").classList.remove("successful");showScreen("travel");applyWorldTheme(w);$("worldTitle").textContent="WORLD "+w+" — "+WORLD_NAMES[w-1];$("sceneCaption").textContent=WORLD_NAMES[w-1];renderSmashProgress();$("travelMessage").textContent="Fill 10 sections to summon the boss! Regular bugs fill 1; tough bugs fill 2. SPACE twice = double jump!";travelJumpCount=0;frogX=12;jumping=false;clearTimeout(jumpTimeout);$("travelFrog").style.left="12%";$("travelFrog").style.transform="translateY(0)";
  frogX=90;cameraX=0;frogY=0;frogVY=0;onGround=true;jumpsUsed=0;knockVelocity=0;hitProtectedUntil=0;$("travelFrog").style.opacity="1";$("travelFrog").classList.remove("startled");pitFalls=0;monsterNumber=0;stompCount=0;buildTerrain();spawnMonster();renderTerrain();startMusic();
- travelStart=Date.now();clearInterval(travelInterval);
- travelInterval=setInterval(()=>{const elapsed=Date.now()-travelStart;const pct=Math.min(100,elapsed/travelDuration*100);$("travelProgress").style.width=pct+"%";$("travelTimer").textContent=Math.max(0,Math.ceil((travelDuration-elapsed)/1000))+"s";
-  if(elapsed>=travelDuration){clearInterval(travelInterval);startBoss(w)}
- },100);
+
+}
+function renderSmashProgress(){
+ const bar=$('travelProgress');Array.from(bar.children).forEach((section,i)=>section.classList.toggle('filled',i<smashProgress));bar.setAttribute('aria-valuenow',String(smashProgress));bar.setAttribute('aria-valuetext',smashProgress+' of 10 sections filled');$('smashScore').textContent=smashProgress+' / 10';
+}
+function awardSmashProgress(defeated){
+ if(defeated.progressAwarded||bossArrivalPending)return;
+ defeated.progressAwarded=true;const points=defeated.progressValue||1;smashProgress=Math.min(10,smashProgress+points);renderSmashProgress();
+ $('travelMessage').textContent='SQUISH! ⭐ +'+points+' section'+(points===1?'':'s')+'! '+smashProgress+' / 10';
+ if(smashProgress===10){
+  bossArrivalPending=true;$('travelMessage').textContent='All 10 sections filled! Watch out — here comes the boss!';
+  const version=screenVersion,world=currentWorld;
+  setTimeout(()=>{if(version===screenVersion&&!$('travel').classList.contains('hidden'))startBoss(world);},650);
+ }
 }
 function jump(){
  if($("travel").classList.contains("hidden"))return;
@@ -269,6 +317,12 @@ function jump(){
  if(jumpsUsed>=2)return;
  jumpsUsed++;onGround=false;jumping=true;frogVY=550;travelJumpCount++;tone(jumpsUsed===2?880:660,.08,"square",.035);
 }
+```
+Here is **Part 4**, Amy. 💚
+
+Press **Ctrl + End**, then **Enter** in Notepad. Paste this underneath Part 3, then tell me **“pasted.”** There’s one final part after this.
+
+```javascript
 function applyWorldTheme(w){
  const scene=$('travelScene');for(let n=1;n<=4;n++)scene.classList.toggle('world'+n,n===w);
  seedShot=null;$('seedShot').classList.add('hidden');
@@ -291,8 +345,6 @@ function monsterArt(kind){
 }
 function bumpFrog(time,sourceX){
  if(time<hitProtectedUntil)return;
- 
- $("travelTimer").textContent=Math.max(0,Math.ceil((travelDuration-(Date.now()-travelStart))/1000))+"s";
  knockVelocity=(frogX+27<=sourceX?-1:1)*400;frogVY=Math.max(frogVY,210);onGround=false;jumping=true;
  jumpsUsed=Math.max(1,jumpsUsed);hitProtectedUntil=time+1200;
  $('travelMessage').textContent='Boing! You are okay — keep hopping!';playBump();
@@ -334,11 +386,12 @@ function spawnMonster(){
  let x=useLedge?ledge.x+ledge.w-94:Math.min(worldLength-100,cameraX+width-100);
  if(!useLedge&&pits.some(p=>x+94>p.x&&x<p.x+p.w))x=frogX+130;
  monster={x,y:useLedge?ledge.y:0,baseY:useLedge?ledge.y:0,ledge:useLedge?ledge:null,type:WORLD_MONSTERS[currentWorld-1][monsterNumber++%3],squished:false,phase:Math.random()*6};
- monster.stompsLeft=TOUGH_MONSTERS.includes(monster.type)?2:1;monster.lastStompAt=-1000;
+ monster.stompsLeft=TOUGH_MONSTERS.includes(monster.type)?2:1;monster.progressValue=monster.stompsLeft;monster.lastStompAt=-1000;
  $('monster').dataset.tough=String(monster.stompsLeft===2);$('monster').dataset.hits=monster.stompsLeft;
  monster.nextSeedAt=performance.now()+2200;$('monster').innerHTML=monsterArt(monster.type);$('monster').className='enemy';
 }
 function updateAdventure(dt,time){
+ if(bossArrivalPending){renderTerrain();return;}
  const previousY=frogY;
  frogX=Math.max(8,Math.min(worldLength-65,frogX+knockVelocity*dt));
  knockVelocity*=Math.exp(-7*dt);if(Math.abs(knockVelocity)<2)knockVelocity=0;
@@ -357,7 +410,7 @@ function updateAdventure(dt,time){
  if(frogY<-180){
   frogX=90;cameraX=0;frogY=0;frogVY=0;onGround=true;jumping=false;jumpsUsed=0;knockVelocity=0;successUntil=0;pitFalls++;
   seedShot=null;$('seedShot').classList.add('hidden');spawnMonster();renderTerrain();$('travelFrog').style.transform='translateY(0)';
-  $('travelMessage').textContent='Back to the start! The countdown keeps going — try that jump again.';
+  $('travelMessage').textContent='Back to the start! Your smash progress is safe — try that jump again.';
   return;
  }
  $('travelFrog').style.transform=`translateY(${-frogY}px)`;
@@ -387,8 +440,8 @@ function updateAdventure(dt,time){
    $('travelMessage').textContent='Good stomp! One more to squish this tough monster!';tone(420,.12,'triangle',.06);renderTerrain();return;
   }
   successUntil=time+1600;$('travelFrog').classList.add('successful');$('worldSun').classList.add('cheering');
-  monster.squished=true;travelDuration=Math.max(Date.now()-travelStart,travelDuration-3000);$('travelTimer').textContent=Math.max(0,Math.ceil((travelDuration-(Date.now()-travelStart))/1000))+'s';seedShot=null;$('seedShot').classList.add('hidden');$('monster').classList.add('squished');stompCount++;
-  $('travelMessage').textContent='SQUISH! ⭐ −3 seconds! '+stompCount+' monsters stomped!';
+  monster.squished=true;seedShot=null;$('seedShot').classList.add('hidden');$('monster').classList.add('squished');stompCount++;
+  awardSmashProgress(monster);
   playSquish();frogY=top;frogVY=300;onGround=false;jumping=true;jumpsUsed=1;
   const defeated=monster;spawnAt=time+1000;
   setTimeout(()=>{if(monster===defeated){$('monster').classList.add('hidden');monster=null;}},260);
@@ -397,6 +450,12 @@ function updateAdventure(dt,time){
  }
  renderTerrain();
 }
+```
+Here is **Part 5—the final part**, Amy. 💚
+
+Press **Ctrl + End**, then **Enter** in Notepad. Paste this underneath Part 4. Tell me **“pasted”**, and we’ll save the completed file.
+
+```html
 function bossArt(w){
  const shapes=[ '<polygon points="55,8 12,88 98,88" fill="#ff784e"/>','<rect x="15" y="12" width="80" height="80" rx="5" fill="#a17af7"/>','<circle cx="55" cy="52" r="42" fill="#ffb832"/>','<rect x="7" y="24" width="96" height="65" rx="5" fill="#49bce5"/>'];
  return `<svg viewBox="0 0 110 130" aria-label="Scowling ${BOSS_NAMES[w-1]}" role="img"><g stroke="#17334d" stroke-width="6" stroke-linecap="round"><path class="arm" d="M20 62 L3 79 L-6 59" fill="none"/><path class="arm right" d="M90 62 L107 79 L116 59" fill="none"/><path class="leg" d="M35 85 L30 118 L17 118" fill="none"/><path class="leg right" d="M75 85 L80 118 L93 118" fill="none"/>${shapes[w-1]}<path d="M29 40 L44 46 M66 46 L81 40"/><path d="M37 53 L37 57 M73 53 L73 57"/><path d="M38 76 Q55 61 72 76" fill="none"/></g></svg>`;
@@ -410,6 +469,7 @@ function startBoss(w){
  scene.appendChild($('battleFrog'));scene.appendChild($('tongue'));scene.appendChild($('bossSprite'));
  $('battleFrog').innerHTML=$('travelFrog').innerHTML;$('battleFrog').style.display='block';$('battleFrog').style.left='25%';
  scene.classList.add('bossArena','bossArrival');$('bossSprite').classList.add('arriving');
+ $('bossScreen').scrollIntoView({block:'start',behavior:'instant'});
  lockSpelling(true);$('spokenWord').textContent='The boss blocks your path!';
  soundSweep(85,35,.8,'sawtooth',.05);
  laterBattle(()=>{scene.classList.remove('bossArrival');$('bossSprite').classList.remove('arriving');askCurrentWord();},1600);
@@ -417,7 +477,7 @@ function startBoss(w){
 function askCurrentWord(){
  lockSpelling(false);const list=worldWords(currentWorld);if(currentWordIndex>=5){winWorld();return}
  $("spokenWord").textContent="Listen carefully…";$("spellingInput").value="";$("feedback").textContent="";renderLetterBlanks();
- speakWord(list[currentWordIndex]);setTimeout(()=>{$("spellingInput").focus()},350);
+ speakWord(list[currentWordIndex]);laterBattle(()=>{$("spellingInput").focus({preventScroll:true})},350);
 }
 function submitSpelling(){
  if(battleBusy||$("bossScreen").classList.contains("hidden"))return;
@@ -431,7 +491,7 @@ function submitSpelling(){
  }else{
   battleMisses++;markChallengingWord((currentWorld<=2?0:5)+currentWordIndex);$("feedback").className="feedback oops";$("feedback").textContent="Look at the spelling, then try again. Replay this world for a perfect battle!";
   $("spokenWord").textContent=target;
-  laterBattle(()=>{lockSpelling(false);if(!$("bossScreen").classList.contains("hidden")&&currentWordIndex<5){$("spokenWord").textContent="Try spelling it again!";$("spellingInput").value="";renderLetterBlanks();$("spellingInput").focus()}},5000);
+  laterBattle(()=>{lockSpelling(false);if(!$("bossScreen").classList.contains("hidden")&&currentWordIndex<5){$("spokenWord").textContent="Try spelling it again!";$("spellingInput").value="";renderLetterBlanks();$("spellingInput").focus({preventScroll:true})}},5000);
  }
 }
 function winWorld(){
@@ -513,8 +573,8 @@ function movementFrame(time){
  requestAnimationFrame(movementFrame);
 }
 requestAnimationFrame(movementFrame);
-$("jumpBtn").onclick=jump;$("quitTravel").onclick=()=>{clearInterval(travelInterval);renderWorlds();showScreen("worldSelect")};
-$("spellingInput").addEventListener("input",renderLetterBlanks);$("letterBlanks").onclick=()=>$("spellingInput").focus();
+$("jumpBtn").onclick=jump;$("quitTravel").onclick=()=>{renderWorlds();showScreen("worldSelect")};
+$("spellingInput").addEventListener("input",renderLetterBlanks);$("letterBlanks").onclick=()=>$("spellingInput").focus({preventScroll:true});
 $("submitWord").onclick=submitSpelling;$("spellingInput").addEventListener("keydown",e=>{if(e.key==="Enter")submitSpelling()});$("hearAgain").onclick=()=>speakWord(worldWords(currentWorld)[currentWordIndex]);
 $("leaveBoss").onclick=()=>{speechSynthesis?.cancel?.();renderWorlds();showScreen("worldSelect")};
 $("nextBtn").onclick=()=>{if(replayRequired){startTravel(currentWorld);return;}if(currentWorld===4){saveProgress({completed:[]});playerSession=null;showScreen("home")}else{renderWorlds();startTravel(currentWorld+1)}};
@@ -531,3 +591,4 @@ loadClasses();
 </script>
 </body>
 </html>
+```
