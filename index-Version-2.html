@@ -101,6 +101,17 @@ body.bossMode .wrap{max-width:1100px;padding:8px}body.bossMode .brand{font-size:
  #bossScreen{grid-template-columns:minmax(0,1fr);gap:7px;padding:10px}#bossScreen>#travelScene{grid-column:1;grid-row:3;height:clamp(160px,30dvh,215px)}#bossScreen>.bossArea{grid-column:1;grid-row:4}#bossSpelling{grid-column:1;grid-row:5}#bossScreen>#bossIntro{font-size:18px}#bossScreen .hearts{font-size:20px}#bossScreen .bossArea .note{display:none}#bossScreen .wordPrompt{font-size:21px;padding:5px 8px}#bossSpelling>p{display:none}#bossScreen .feedback{min-height:25px;font-size:15px}#bossScreen .answerRow{max-width:480px;margin:7px auto}body.bossMode .brand{font-size:18px}
 }
 
+
+/* Large, paced spelling model after an incorrect attempt. */
+#spellingCoach{background:#fffbe5;border:4px solid #17334d;border-radius:18px;padding:14px 10px;margin:8px 0;box-shadow:0 5px 0 #a8d39b}
+#coachInstruction{font-size:clamp(20px,2.5vw,26px);font-weight:bold;line-height:1.35;margin:0 0 12px}
+#coachWord{display:flex;justify-content:center;flex-wrap:wrap;gap:2px;font-family:Arial,sans-serif;font-size:clamp(42px,6vw,68px);font-weight:700;line-height:1.3;color:#17334d}
+.coachLetter{display:inline-block;padding:0 3px;border-bottom:5px solid transparent;border-radius:9px}
+.coachLetter.active{background:#a5ef9d;border-bottom-color:#146139;color:#10351f;box-shadow:0 0 0 3px #146139}
+.coachLetter.done{border-bottom-color:#8bc681}
+#bossSpelling.coaching #spokenWord,#bossSpelling.coaching .letterBlanks,#bossSpelling.coaching .answerRow,#bossSpelling.coaching #hearAgain{display:none}
+#bossScreen #bossSpelling.coaching .feedback{font-size:18px;line-height:1.4}
+
 </style>
 </head>
 <body>
@@ -113,7 +124,7 @@ body.bossMode .wrap{max-width:1100px;padding:8px}body.bossMode .brand{font-size:
       <div class="pixelTitle">FROG'S<br>SPELLING<br>ADVENTURE!</div>
       <div class="frog">🐸</div>
       <div class="subtitle">Hop, stomp, spell, and save the day!</div>
-      <label for="studentClass" style="margin-top:12px;font-weight:bold">Your class</label><select id="studentClass" style="font-size:21px;padding:9px;border:3px solid #17334d;border-radius:12px;width:240px"></select><label for="studentName" style="margin-top:12px;font-weight:bold">Your first name</label><input id="studentName"  autocomplete="off" maxlength="40" style="font-size:24px;padding:10px;border:3px solid #17334d;border-radius:12px;width:240px;text-align:center"><datalist id="classNames"></datalist><button id="retrySetup" class="small hidden">TRY LOADING AGAIN</button><div class="note"><strong>VERSION 2 · Quick-start test</strong></div><div id="assignmentStatus" role="status" class="note"></div><div id="syncStatus" role="status" class="note"></div><div id="nameMessage" role="status" class="note"></div><button class="big" id="playBtn">▶ PLAY</button>
+      <label for="studentClass" style="margin-top:12px;font-weight:bold">Your class</label><select id="studentClass" style="font-size:21px;padding:9px;border:3px solid #17334d;border-radius:12px;width:240px"></select><label for="studentName" style="margin-top:12px;font-weight:bold">Your first name</label><input id="studentName"  autocomplete="off" maxlength="40" style="font-size:24px;padding:10px;border:3px solid #17334d;border-radius:12px;width:240px;text-align:center"><datalist id="classNames"></datalist><button id="retrySetup" class="small hidden">TRY LOADING AGAIN</button><div class="note"><strong>VERSION 2 · Guided spelling practice</strong></div><div id="assignmentStatus" role="status" class="note"></div><div id="syncStatus" role="status" class="note"></div><div id="nameMessage" role="status" class="note"></div><button class="big" id="playBtn">▶ PLAY</button>
       <button id="resetProgress" class="small">RESET PLAYER PROGRESS</button>
     </div>
   </section>
@@ -144,6 +155,7 @@ body.bossMode .wrap{max-width:1100px;padding:8px}body.bossMode .brand{font-size:
     <div class="center" id="bossSpelling">
       <p><strong>Listen carefully, then spell the word.</strong></p>
       <div id="spokenWord" class="wordPrompt">Ready?</div>
+      <div id="spellingCoach" class="hidden"><p id="coachInstruction" role="status">Let’s practice together.</p><div id="coachWord" aria-label="Spelling model"></div></div>
       <div id="letterBlanks" class="letterBlanks" aria-hidden="true"></div><div class="answerRow"><input id="spellingInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type the spelling word" placeholder="Type the word here"><button id="submitWord">SPELL IT!</button></div>
       <div class="feedback" id="feedback" aria-live="polite"></div>
       <button class="small" id="hearAgain">🔊 HEAR WORD AGAIN</button>
@@ -194,7 +206,7 @@ let lastMovementFrame = null;
 let words = [...DEFAULT_WORDS], currentWorld = 1, currentWordIndex = 0, hits = 0, travelJumpCount = 0;
 const $ = id => document.getElementById(id);
 const screens = ["home","worldSelect","travel","bossScreen","victory"];
-function showScreen(id){ document.body.classList.toggle("bossMode",id==="bossScreen");screenVersion++;battleTimers.forEach(clearTimeout);battleTimers=[];battleBusy=false;clearMovementKeys();if(id!=="travel"){seedShot=null;$("seedShot").classList.add("hidden");monster=null;$("monster").classList.add("hidden");}$("tongue").classList.remove("lash");$("battleFrog").classList.remove("dance"); screens.forEach(s=>$(s).classList.toggle("hidden",s!==id)); if(id==="home"&&!playerSession)applyNextAssignment(); }
+function showScreen(id){ cancelSpellingCoach();document.body.classList.toggle("bossMode",id==="bossScreen");screenVersion++;battleTimers.forEach(clearTimeout);battleTimers=[];battleBusy=false;clearMovementKeys();if(id!=="travel"){seedShot=null;$("seedShot").classList.add("hidden");monster=null;$("monster").classList.add("hidden");}$("tongue").classList.remove("lash");$("battleFrog").classList.remove("dance"); screens.forEach(s=>$(s).classList.toggle("hidden",s!==id)); if(id==="home"&&!playerSession)applyNextAssignment(); }
 function getProgress(){try{return JSON.parse(localStorage.getItem(playerStorageKey("frogSpellProgress"))||'{"completed":[]}')}catch(e){return {completed:[]}}}
 function saveProgress(p){localStorage.setItem(playerStorageKey("frogSpellProgress"),JSON.stringify(p))}
 function worldWords(w){return w<=2?words.slice(0,5):words.slice(5,10)}
@@ -294,15 +306,69 @@ async function sendCompletionReport(){
  }catch(e){$('reportStatus').textContent='Keep this page open. Browser storage needs teacher attention.';}
  finally{sendingReports=false;$('retryReport').disabled=false;updateSyncStatus();}
 }
-function speakWord(word){
- $("spokenWord").textContent="🔊 Listen!";
- if(!("speechSynthesis" in window)){ $("spokenWord").textContent="Listen, then spell!";return; }
- speechSynthesis.cancel();
- const utterance=new SpeechSynthesisUtterance(word);utterance.lang="en-US";utterance.rate=.78;utterance.pitch=1.05;
+let coachingActive=false,spellingCoachRun=0;
+const coachTimers=new Set();
+function wordUtterance(text,rate=.78){
+ const utterance=new SpeechSynthesisUtterance(text);utterance.lang='en-US';utterance.rate=rate;utterance.pitch=1.05;
  const voices=speechSynthesis.getVoices();const clara=voices.find(v=>/clara/i.test(v.name)&&/microsoft/i.test(v.name));
- if(clara)utterance.voice=clara;
- utterance.onend=()=>{if($("bossScreen").classList.contains("hidden")===false)$("spokenWord").textContent="Your turn to spell!";};
+ if(clara)utterance.voice=clara;return utterance;
+}
+function speakWord(word){
+ $('spokenWord').textContent='🔊 Listen!';
+ if(!('speechSynthesis' in window)){ $('spokenWord').textContent='Listen, then spell!';return; }
+ speechSynthesis.cancel();const version=screenVersion,index=currentWordIndex;
+ const utterance=wordUtterance(word);
+ utterance.onend=()=>{if(version===screenVersion&&index===currentWordIndex&&!coachingActive&&!$('bossScreen').classList.contains('hidden'))$('spokenWord').textContent='Your turn to spell!';};
  speechSynthesis.speak(utterance);
+}
+function cancelSpellingCoach(){
+ const wasActive=coachingActive;coachingActive=false;spellingCoachRun++;
+ coachTimers.forEach(clearTimeout);coachTimers.clear();
+ if(wasActive&&'speechSynthesis' in window)speechSynthesis.cancel();
+ $('spellingCoach').classList.add('hidden');$('bossSpelling').classList.remove('coaching');$('coachWord').textContent='';
+}
+function guideSpellingRetry(target){
+ cancelSpellingCoach();lockSpelling(true);coachingActive=true;
+ const run=spellingCoachRun,version=screenVersion,index=currentWordIndex,world=currentWorld;
+ const current=()=>coachingActive&&run===spellingCoachRun&&version===screenVersion&&index===currentWordIndex&&world===currentWorld&&!$('bossScreen').classList.contains('hidden');
+ function wait(fn,delay){const id=setTimeout(()=>{coachTimers.delete(id);if(current())fn();},delay);coachTimers.add(id);return id;}
+ function say(text,done,onStart=()=>{},rate=.72){
+  if(!current())return;let finished=false,started=false;
+  const start=()=>{if(!started&&current()){started=true;onStart();}};
+  const finish=()=>{if(finished)return;finished=true;clearTimeout(guard);coachTimers.delete(guard);if(current()){start();wait(done,350);}};
+  const guard=wait(()=>{if('speechSynthesis' in window)speechSynthesis.cancel();finish();},Math.max(6000,Math.min(16000,text.length*110+3500)));
+  if(!('speechSynthesis' in window)||typeof SpeechSynthesisUtterance==='undefined'){
+   start();wait(finish,Math.max(1300,text.length*65));return;
+  }
+  try{const utterance=wordUtterance(text,rate);utterance.onstart=start;utterance.onend=finish;utterance.onerror=()=>{if(!current()||finished)return;start();wait(finish,Math.max(1300,text.length*65));};speechSynthesis.speak(utterance);}
+  catch(e){start();wait(finish,Math.max(1300,text.length*65));}
+ }
+ $('spellingInput').value='';renderLetterBlanks();
+ $('spellingCoach').classList.remove('hidden');$('bossSpelling').classList.add('coaching');
+ $('coachInstruction').textContent='Look at the word. Listen carefully.';
+ const letters=Array.from(target),spans=letters.map(letter=>{const span=document.createElement('span');span.className='coachLetter';span.textContent=letter;$('coachWord').appendChild(span);return span;});
+ $('coachWord').setAttribute('aria-label',target);
+ function retry(){
+  if(!current())return;cancelSpellingCoach();lockSpelling(false);
+  $('spokenWord').textContent='Now you try!';$('feedback').className='feedback';$('feedback').textContent='Listen, sound it out, and spell it again.';
+  $('spellingInput').value='';renderLetterBlanks();$('spellingInput').focus({preventScroll:true});
+ }
+ function repeatWord(){
+  spans.forEach(span=>span.classList.remove('active'));
+  $('coachInstruction').textContent='Listen to the whole word again.';
+  say(target,()=>{$('coachInstruction').textContent='Now it is your turn.';say('Okay, now you try. Spell the word again.',retry);});
+ }
+ function spellLetter(i){
+  if(!current())return;if(i>=letters.length){repeatWord();return;}
+  let startedAt=performance.now();
+  const letter=letters[i],spoken=letter===' '?'space':letter.toLocaleUpperCase('en-US');
+  say(spoken,()=>{wait(()=>{spans[i].classList.remove('active');spans[i].classList.add('done');spellLetter(i+1);},Math.max(400,1100-(performance.now()-startedAt)));},()=>{
+   startedAt=performance.now();spans.forEach(span=>span.classList.remove('active'));spans[i].classList.add('active');
+  },.68);
+ }
+ // Keep the entire model visible until the word, letters, and final prompt finish.
+ if('speechSynthesis' in window)speechSynthesis.cancel();
+ say(target,()=>{$('coachInstruction').textContent='Say each letter with me.';say('Let’s spell it together. Say each letter with me.',()=>spellLetter(0));});
 }
 function startTravel(w){
  if(!unlocked(w)){return}
@@ -493,9 +559,8 @@ function submitSpelling(){
   currentWordIndex++;
   if(hits===5){laterBattle(winWorld,800)}else laterBattle(askCurrentWord,1000);
  }else{
-  battleMisses++;markChallengingWord((currentWorld<=2?0:5)+currentWordIndex);$("feedback").className="feedback oops";$("feedback").textContent="Look at the spelling, then try again. Replay this world for a perfect battle!";
-  $("spokenWord").textContent=target;
-  laterBattle(()=>{lockSpelling(false);if(!$("bossScreen").classList.contains("hidden")&&currentWordIndex<5){$("spokenWord").textContent="Try spelling it again!";$("spellingInput").value="";renderLetterBlanks();$("spellingInput").focus({preventScroll:true})}},5000);
+  battleMisses++;markChallengingWord((currentWorld<=2?0:5)+currentWordIndex);$("feedback").className="feedback oops";$("feedback").textContent="Let’s practice this word together.";
+  guideSpellingRetry(target);
  }
 }
 function winWorld(){
