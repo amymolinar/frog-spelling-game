@@ -1,0 +1,30 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Update Frog Spelling</title><style>body{font:20px Trebuchet MS,Arial;background:#e9f6e9;color:#315c47;text-align:center;padding:12vh 20px}main{max-width:600px;margin:auto;background:white;padding:30px;border-radius:25px}button{font:inherit;padding:14px 22px;border:0;border-radius:15px;background:#397957;color:white;cursor:pointer}p{line-height:1.5}</style><main><h1>🐸 Update Frog Spelling</h1><p>Use this when no child is in the middle of a game.</p><p>Your saved classes and results stay on this computer.</p><button id="go">Open the newest game</button><p id="status" role="status"></p></main><script>
+const status=document.getElementById('status');
+document.getElementById('go').onclick=async()=>{
+ const button=document.getElementById('go');button.disabled=true;status.textContent='Checking the newest game…';
+ try{
+  const versionURL=new URL('game-version.json',location.href);versionURL.searchParams.set('check',Date.now());
+  const response=await fetch(versionURL,{cache:'no-store'});if(!response.ok)throw Error('The update files are not published yet.');const version=await response.json();
+  if('serviceWorker' in navigator){
+   const activeBuild=r=>new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>reject(Error('The update is taking a little longer. Please try again.')),35000);
+    const done=()=>{clearTimeout(timer);resolve();};
+    const watch=worker=>{if(!worker)return;if(worker.state==='activated')done();else worker.addEventListener('statechange',()=>{if(worker.state==='activated')done();if(worker.state==='redundant'){clearTimeout(timer);reject(Error('The game is still publishing. Please try again shortly.'));}});};
+    if(r.installing)watch(r.installing);else if(r.waiting)watch(r.waiting);else if(r.active)done();else r.addEventListener('updatefound',()=>watch(r.installing),{once:true});
+   });
+   const registration=await navigator.serviceWorker.register('./sw-Version-2.js',{updateViaCache:'none'});await registration.update();await activeBuild(registration);
+   // Wait for the new controller to claim this page before requesting the previously cached game URL.
+   await new Promise(resolve=>{if(navigator.serviceWorker.controller){resolve();return;}let timer=setTimeout(resolve,2000);navigator.serviceWorker.addEventListener('controllerchange',()=>{clearTimeout(timer);resolve();},{once:true});});
+  }
+  const game=new URL('index-Version-2.html',location.href);game.searchParams.set('gameBuild',version.build);
+  let ready=false;
+  for(let attempt=0;attempt<25;attempt++){
+   const shell=await fetch(game,{cache:'no-store'});
+   if(shell.ok&&(await shell.text()).includes('name="frog-game-build" content="'+version.build+'"')){ready=true;break;}
+   status.textContent='Installing the newest game…';await new Promise(resolve=>setTimeout(resolve,1500));
+  }
+  if(!ready)throw Error('The updated files are still publishing. Please try this button again shortly.');
+  location.replace(game.href);
+ }catch(error){status.textContent=error.message;button.disabled=false;}
+};
+</script></html>

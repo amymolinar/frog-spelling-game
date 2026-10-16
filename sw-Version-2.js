@@ -1,40 +1,38 @@
-/* Frog quick-start files. Bump VERSION when publishing a new game build. */
-const VERSION='frog-offline-version-2-2026-10-11-v1';
+/* Only game code is cached here. Classroom assignments and reports never enter this cache. */
+const BUILD="2026-10-15-worlds-1";
 const ROOT=new URL('./',self.location.href);
-const FILES=['index-Version-2.html','teacher-Version-2.html'].map(path=>new URL(path,ROOT).href);
-const CACHE=VERSION+':'+ROOT.pathname;
-
+const GAME=new URL('index-Version-2.html',ROOT).href;
+const PREFIX='frog-game-shell-v3:'+ROOT.pathname+':';
+const CACHE=PREFIX+BUILD;
+const marker='name="frog-game-build" content="'+BUILD+'"';
 self.addEventListener('install',event=>{
- event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES.map(url=>new Request(url,{cache:'reload'})))));
-});
-
-self.addEventListener('activate',event=>{
  event.waitUntil((async()=>{
-  const keys=await caches.keys();
-  await Promise.all(keys.filter(key=>key.startsWith('frog-offline-version-2-')&&key.endsWith(':'+ROOT.pathname)&&key!==CACHE).map(key=>caches.delete(key)));
-  await self.clients.claim();
+  const response=await fetch(GAME+'?installBuild='+encodeURIComponent(BUILD),{cache:'no-store'});
+  if(!response.ok||!(await response.clone().text()).includes(marker))throw Error('Matching game build is not published yet.');
+  await (await caches.open(CACHE)).put(GAME,response);
+  await self.skipWaiting();
  })());
 });
-
+self.addEventListener('activate',event=>{
+ event.waitUntil((async()=>{
+  for(const name of await caches.keys())if(name.startsWith(PREFIX)&&name!==CACHE)await caches.delete(name);
+  await self.clients.claim();
+  for(const client of await self.clients.matchAll({type:'window'}))client.postMessage({type:'FROG_GAME_CODE_READY',build:BUILD});
+ })());
+});
 self.addEventListener('fetch',event=>{
  const url=new URL(event.request.url);
- // Never intercept Google Script, report submissions, or unrelated websites.
- if(event.request.method!=='GET'||url.origin!==ROOT.origin)return;
- const path=url.pathname===new URL('index-Version-2.html',ROOT).pathname?'index-Version-2.html':url.pathname===new URL('teacher-Version-2.html',ROOT).pathname?'teacher-Version-2.html':null;
- if(!path)return;
- const canonical=new URL(path,ROOT).href;
- const fresh=(async()=>{
-  const response=await fetch(event.request);
-  if(response.ok){
-   const cache=await caches.open(CACHE);
-   await cache.put(canonical,response.clone());
-  }
-  return response;
- })();
- event.waitUntil(fresh.then(()=>{},()=>{}));
+ if(event.request.method!=='GET'||url.origin!==ROOT.origin||url.pathname!==new URL(GAME).pathname)return;
  event.respondWith((async()=>{
-  const saved=await caches.match(canonical,{cacheName:CACHE});
-  if(saved)return saved;
-  return fresh;
+  try{
+   const response=await fetch(new Request(event.request,{cache:'no-store'}));
+   if(!response.ok)throw Error('Game server unavailable');
+   // A newer game may be live just before its worker is ready. Serve it, but do not overwrite this build's fallback.
+   if((await response.clone().text()).includes(marker))await (await caches.open(CACHE)).put(GAME,response.clone());
+   return response;
+  }catch(error){
+   const saved=await (await caches.open(CACHE)).match(GAME);
+   if(saved)return saved;throw error;
+  }
  })());
 });
