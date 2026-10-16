@@ -1,5 +1,5 @@
 /* Only game code is cached here. Classroom assignments and reports never enter this cache. */
-const BUILD="2026-10-15-worlds-1";
+const BUILD="2026-10-15-worlds-2";
 const ROOT=new URL('./',self.location.href);
 const GAME=new URL('index-Version-2.html',ROOT).href;
 const PREFIX='frog-game-shell-v3:'+ROOT.pathname+':';

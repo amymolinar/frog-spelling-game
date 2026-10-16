@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Frog’s Spelling Adventure · Four Worlds</title>
-<meta name="frog-game-build" content="2026-10-15-worlds-1">
+<meta name="frog-game-build" content="2026-10-15-worlds-2">
 <style>
 :root{--ink:#17334d;--cream:#fff9df;--pink:#ff78a8;--yellow:#ffe45c;--blue:#38bdf8;--green:#62d96b}
 *{box-sizing:border-box} body{margin:0;background:#75d9ff;color:var(--ink);font-family:"Trebuchet MS",Arial,sans-serif}
@@ -287,7 +287,7 @@ body{background:linear-gradient(#d3f0ee,#f2f9df);background-attachment:fixed}.pa
   <footer>Made for brave spellers. Original retro-inspired characters and artwork.</footer>
 </div>
 <script>
-const GAME_BUILD = "2026-10-15-worlds-1";
+const GAME_BUILD = "2026-10-15-worlds-2";
 /*
   CONFIGURATION:
   After deploying the included Google Apps Script, paste its Web App URL below.
@@ -885,7 +885,6 @@ let adventure=null;let flowerTheme=0;
 
 const stage=document.createElement('canvas');stage.id='newAdventureCanvas2';stage.width=960;stage.height=550;stage.setAttribute('aria-label','New world adventure');$('travelScene').appendChild(stage);
 const paint=stage.getContext('2d');
-const banner=document.createElement('div');banner.className='previewBanner';banner.textContent='SEPARATE OFFLINE TEST • Sample words • All worlds available • Classroom data is not used';document.body.prepend(banner);
 startTravel=function(w){stage.classList.remove('activeAdventure');if(w!==2){adventure=null;return liveStartTravel(w);}
  $('travelScene').classList.remove('newAdventure');adventure=null;liveStartTravel(w);
  $('travelProgress').setAttribute('aria-label',w===1?'Monster smash progress':w===2?'Hearts collected':w===3?'Fireflies rescued':'Stars collected');
@@ -966,7 +965,6 @@ let adventure=null;let flowerTheme=0;
 
 const stage=document.createElement('canvas');stage.id='newAdventureCanvas3';stage.width=960;stage.height=550;stage.setAttribute('aria-label','New world adventure');$('travelScene').appendChild(stage);
 const paint=stage.getContext('2d');
-const banner=document.createElement('div');banner.className='previewBanner';banner.textContent='SEPARATE OFFLINE TEST • Sample words • All worlds available • Classroom data is not used';document.body.prepend(banner);
 startTravel=function(w){stage.classList.remove('activeAdventure');if(w!==3){adventure=null;return liveStartTravel(w);}
  $('travelScene').classList.remove('newAdventure');adventure=null;liveStartTravel(w);
  $('travelProgress').setAttribute('aria-label',w===1?'Monster smash progress':w===2?'Blooms collected':w===3?'Fireflies rescued':'Stars collected');
@@ -1098,7 +1096,6 @@ let adventure=null;let flowerTheme=0;
 
 const stage=document.createElement('canvas');stage.id='newAdventureCanvas4';stage.width=960;stage.height=550;stage.setAttribute('aria-label','New world adventure');$('travelScene').appendChild(stage);
 const paint=stage.getContext('2d');
-const banner=document.createElement('div');banner.className='previewBanner';banner.textContent='SEPARATE OFFLINE TEST • Sample words • All worlds available • Classroom data is not used';document.body.prepend(banner);
 startTravel=function(w){stage.classList.remove('activeAdventure');if(w!==4){adventure=null;return liveStartTravel(w);}
  $('travelScene').classList.remove('newAdventure');adventure=null;liveStartTravel(w);
  $('travelProgress').setAttribute('aria-label',w===1?'Monster smash progress':w===2?'Blooms collected':w===3?'Fireflies rescued':'Stars collected');
